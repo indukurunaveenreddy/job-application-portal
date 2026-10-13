@@ -1,0 +1,22 @@
+#!/bin/bash
+PROJECT_DIR="/Applications/job application portal"
+cd "$PROJECT_DIR" || exit 1
+
+# Check if backend (port 5001) is running; if not, start it
+if ! lsof -iTCP:5001 -sTCP:LISTEN -P -n >/dev/null 2>&1; then
+    nohup node backend/server.js > /tmp/job-portal-backend.log 2>&1 &
+    sleep 2
+fi
+
+# Check if frontend (port 3000) is running; if not, start it
+if ! lsof -iTCP:3000 -sTCP:LISTEN -P -n >/dev/null 2>&1; then
+    nohup npx serve -s build -l 3000 > /tmp/job-portal-frontend.log 2>&1 &
+    sleep 2
+fi
+
+# Launch application window
+if [ -d "/Applications/Google Chrome.app" ]; then
+    open -na "Google Chrome" --args --app="http://localhost:3000" --window-size=1280,850
+else
+    open "http://localhost:3000"
+fi

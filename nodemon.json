@@ -1,0 +1,12 @@
+{
+  "targets": {
+    "dev": {
+      "root": ".",
+      "workers": "fork",
+      "src": "backend/server.js",
+      "execMap": {
+        "js": "node"
+      }
+    }
+  }
+}
