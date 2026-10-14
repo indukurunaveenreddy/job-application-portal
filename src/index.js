@@ -2013,6 +2013,32 @@ const Register = () => {
   const [otpCode, setOtpCode] = useState("");
   const [lastOtp, setLastOtp] = useState("");
 
+  // Offline registration fallback (works on GitHub Pages)
+  const offlineRegister = (payload) => {
+    const users = JSON.parse(localStorage.getItem("nexhire_users") || "[]");
+    const identifier = payload.email || payload.phoneNumber;
+    if (users.find((u) => u.email === identifier || u.phoneNumber === identifier)) {
+      addToast("Account already exists. Please sign in.", "error");
+      return;
+    }
+    const newUser = {
+      _id: "user-" + Date.now(),
+      name: payload.name,
+      email: payload.email || identifier + "@nexhire.local",
+      phoneNumber: payload.phoneNumber || "",
+      role: "job_seeker",
+      isEmailVerified: true,
+      isPhoneVerified: true,
+      password: payload.password,
+    };
+    users.push(newUser);
+    localStorage.setItem("nexhire_users", JSON.stringify(users));
+    const token = "offline-jwt-" + Date.now();
+    login(newUser, token);
+    addToast("Account created! You are now signed in.", "success");
+    navigate("/seeker/dashboard");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { name, email, phoneNumber: phone, password: password || "nexhire123", role };
@@ -2025,6 +2051,14 @@ const Register = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      // Check if we got HTML instead of JSON (GitHub Pages)
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        console.warn("Backend not available, using offline registration");
+        offlineRegister(payload);
+        return;
+      }
 
       const data = await res.json();
       if (res.ok) {
@@ -2041,7 +2075,9 @@ const Register = () => {
         addToast(data.message || "Registration failed", "error");
       }
     } catch (err) {
-      addToast(err.message, "error");
+      // Network error — use offline fallback
+      console.warn("Backend unreachable, using offline registration:", err.message);
+      offlineRegister(payload);
     }
   };
 
@@ -2211,6 +2247,41 @@ const Login = () => {
     setPassword("seeker123");
   };
 
+  // Offline login fallback (works on GitHub Pages)
+  const offlineLogin = () => {
+    // Check demo credentials first
+    if (
+      (emailOrPhone === "seeker@portal.com" && password === "seeker123")
+    ) {
+      const demoUser = {
+        _id: "demo-seeker-id",
+        name: "Rahul Sharma (Job Seeker)",
+        email: "seeker@portal.com",
+        phoneNumber: "+91 98765 43210",
+        role: "job_seeker",
+        isEmailVerified: true,
+        isPhoneVerified: true,
+      };
+      login(demoUser, "demo-jwt-token-gh-pages");
+      navigate("/seeker/dashboard");
+      return true;
+    }
+    // Check localStorage registered users
+    const users = JSON.parse(localStorage.getItem("nexhire_users") || "[]");
+    const found = users.find(
+      (u) =>
+        (u.email === emailOrPhone || u.phoneNumber === emailOrPhone) &&
+        u.password === password
+    );
+    if (found) {
+      const { password: _, ...safeUser } = found;
+      login(safeUser, "offline-jwt-" + Date.now());
+      navigate("/seeker/dashboard");
+      return true;
+    }
+    return false;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -2220,6 +2291,16 @@ const Login = () => {
         body: JSON.stringify({ emailOrPhone, password, role }),
       });
 
+      // Check if we got HTML instead of JSON (GitHub Pages)
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        console.warn("Backend not available, using offline login");
+        if (!offlineLogin()) {
+          addToast("Invalid credentials. Try demo: seeker@portal.com / seeker123", "error");
+        }
+        return;
+      }
+
       const data = await res.json();
       if (res.ok) {
         login(data.user, data.token);
@@ -2228,7 +2309,11 @@ const Login = () => {
         addToast(data.message || "Login failed", "error");
       }
     } catch (err) {
-      addToast(err.message, "error");
+      // Network error — use offline fallback
+      console.warn("Backend unreachable, using offline login:", err.message);
+      if (!offlineLogin()) {
+        addToast("Invalid credentials. Try demo: seeker@portal.com / seeker123", "error");
+      }
     }
   };
 
