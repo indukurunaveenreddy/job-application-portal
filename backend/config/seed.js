@@ -14,20 +14,7 @@ const seedData = async () => {
     console.log("Seeding initial database demo data...");
     const salt = await bcrypt.genSalt(10);
 
-    // 1. Seed Admin
-    let admin = await User.findOne({ email: "admin@portal.com" });
-    if (!admin) {
-      admin = await User.create({
-        name: "Portal Administrator",
-        email: "admin@portal.com",
-        password: await bcrypt.hash("admin123", salt),
-        role: "admin",
-        isEmailVerified: true,
-        isPhoneVerified: true,
-      });
-    }
-
-    // 2. Seed Company
+    // 1. Seed Company (needed for job listings)
     let company = await Company.findOne({ email: "hr@techcorp.com" });
     if (!company) {
       company = await Company.create({
@@ -43,7 +30,7 @@ const seedData = async () => {
       });
     }
 
-    // 3. Seed Job Seeker
+    // 2. Seed Job Seeker (demo account)
     let seeker = await User.findOne({ email: "seeker@portal.com" });
     if (!seeker) {
       seeker = await User.create({
@@ -136,8 +123,6 @@ const seedData = async () => {
     console.log("Seeding completed successfully!");
     console.log("-----------------------------------------");
     console.log("Demo Credentials Available:");
-    console.log("Admin:      admin@portal.com  / admin123");
-    console.log("Company HR: hr@techcorp.com   / company123");
     console.log("Job Seeker: seeker@portal.com / seeker123");
     console.log("-----------------------------------------");
   } catch (error) {

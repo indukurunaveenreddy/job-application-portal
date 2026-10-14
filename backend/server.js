@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 const jobRoutes = require("./routes/job.routes");
 const seedData = require("./config/seed");
 
@@ -16,6 +17,21 @@ app.use("/api", jobRoutes);
 // Health check endpoint
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Serve static frontend build
+const buildPath = path.join(__dirname, "../build");
+app.use(express.static(buildPath));
+
+// SPA fallback (all unhandled non-API GET requests return index.html)
+app.use((req, res, next) => {
+  if (req.method === "GET" && !req.path.startsWith("/api")) {
+    const indexPath = path.join(buildPath, "index.html");
+    return res.sendFile(indexPath, (err) => {
+      if (err) next();
+    });
+  }
+  next();
 });
 
 const PORT = process.env.PORT || 5001;

@@ -31,10 +31,7 @@ const ApplicationsScreen = ({ navigation }) => {
     }
 
     try {
-      const isHrOrAdmin = user.role === 'admin' || user.role === 'company_hr';
-      const url = isHrOrAdmin
-        ? ENDPOINTS.applications
-        : `${ENDPOINTS.myApplications}?email=${encodeURIComponent(user.email || '')}&phone=${encodeURIComponent(user.phoneNumber || '')}`;
+      const url = `${ENDPOINTS.myApplications}?email=${encodeURIComponent(user.email || '')}&phone=${encodeURIComponent(user.phoneNumber || '')}`;
 
       const res = await fetch(url, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -229,13 +226,9 @@ const ApplicationsScreen = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.headerTitle}>
-            {user.role === 'company_hr' || user.role === 'admin' ? 'Candidate Applications' : 'My Applications'}
-          </Text>
+          <Text style={styles.headerTitle}>My Applications</Text>
           <Text style={styles.headerSubtitle}>
-            {user.role === 'company_hr' || user.role === 'admin'
-              ? 'Tracking all candidates registered with email & phone'
-              : `Logged in as ${user.name || user.email}`}
+            {`Logged in as ${user.name || user.email}`}
           </Text>
         </View>
 

@@ -241,35 +241,18 @@ const LoginScreen = ({ navigation, route }) => {
         {/* ===================== TAB 1: SIGN IN ===================== */}
         {activeTab === 'signin' && (
           <View style={styles.form}>
-            {/* Role Switcher */}
+            {/* Role is Job Seeker only */}
             <View style={styles.roleContainer}>
-              <TouchableOpacity
-                style={[styles.roleTab, role === 'job_seeker' && styles.roleTabActive]}
-                onPress={() => setRole('job_seeker')}
-              >
+              <View style={[styles.roleTab, styles.roleTabActive]}>
                 <Ionicons
                   name="person"
                   size={15}
-                  color={role === 'job_seeker' ? COLORS.primary : COLORS.textMuted}
+                  color={COLORS.primary}
                 />
-                <Text style={[styles.roleTabText, role === 'job_seeker' && styles.roleTabTextActive]}>
+                <Text style={[styles.roleTabText, styles.roleTabTextActive]}>
                   Job Seeker
                 </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.roleTab, role === 'company_hr' && styles.roleTabActive]}
-                onPress={() => setRole('company_hr')}
-              >
-                <Ionicons
-                  name="business"
-                  size={15}
-                  color={role === 'company_hr' ? COLORS.primary : COLORS.textMuted}
-                />
-                <Text style={[styles.roleTabText, role === 'company_hr' && styles.roleTabTextActive]}>
-                  Company HR
-                </Text>
-              </TouchableOpacity>
+              </View>
             </View>
 
             {/* Email or Phone Input */}
@@ -617,7 +600,7 @@ const LoginScreen = ({ navigation, route }) => {
           <View style={styles.dividerLine} />
         </View>
 
-        {/* Demo Fast Login Buttons */}
+        {/* Demo Fast Login Button */}
         <View style={styles.demoButtonsContainer}>
           <TouchableOpacity
             style={styles.demoBtn}
@@ -626,24 +609,6 @@ const LoginScreen = ({ navigation, route }) => {
           >
             <Ionicons name="person-circle" size={20} color={COLORS.primary} />
             <Text style={styles.demoBtnText}>Job Seeker Demo</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.demoBtn}
-            onPress={() => handleQuickLogin('company_hr')}
-            disabled={loading}
-          >
-            <Ionicons name="business" size={20} color={COLORS.accentGreen} />
-            <Text style={styles.demoBtnText}>HR Demo</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.demoBtn}
-            onPress={() => handleQuickLogin('admin')}
-            disabled={loading}
-          >
-            <Ionicons name="shield-checkmark" size={20} color={COLORS.accentOrange} />
-            <Text style={styles.demoBtnText}>Admin Demo</Text>
           </TouchableOpacity>
         </View>
 

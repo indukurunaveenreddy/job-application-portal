@@ -60,6 +60,16 @@ const HIRING_COMPANIES = [
   { name: "Cognizant India", domain: "cognizant.com", industry: "Enterprise Cloud & Digital", size: "10,000+", website: "https://careers.cognizant.com" },
   { name: "Accenture India", domain: "accenture.com", industry: "Strategy, Consulting & Tech", size: "10,000+", website: "https://www.accenture.com/in-en/careers" },
   { name: "Deloitte India (USI)", domain: "deloitte.com", industry: "Advisory & Enterprise Architecture", size: "10,000+", website: "https://jobs.deloitte.com" },
+
+  // Global Tech & Product Engineering Giants
+  { name: "Cisco India", domain: "cisco.com", industry: "Networking & Cloud Security", size: "10,000+", website: "https://jobs.cisco.com" },
+  { name: "Intuit India", domain: "intuit.com", industry: "Fintech & AI Platforms", size: "2,000-5,000", website: "https://www.intuit.com/careers" },
+  { name: "Adobe India", domain: "adobe.com", industry: "Digital Media & Experience Cloud", size: "5,000+", website: "https://www.adobe.com/careers" },
+  { name: "Uber India", domain: "uber.com", industry: "Mobility & Platform Engineering", size: "2,000-5,000", website: "https://www.uber.com/careers" },
+  { name: "Atlassian", domain: "atlassian.com", industry: "Collaboration & Developer Tools", size: "2,000+", website: "https://www.atlassian.com/company/careers" },
+  { name: "Walmart Global Tech", domain: "walmart.com", industry: "Retail Tech & Supply Chain", size: "10,000+", website: "https://careers.walmart.com" },
+  { name: "Target India", domain: "target.com", industry: "Global Retail & Tech GCC", size: "5,000+", website: "https://india.target.com/careers" },
+  { name: "Paytm", domain: "paytm.com", industry: "Digital Payments & Financial Services", size: "5,000+", website: "https://paytm.com/careers" },
 ];
 
 // Major tech and commercial areas across all 4 top cities
@@ -440,7 +450,7 @@ const syncDailyJobs = async (targetCount = 1000) => {
 
       jobsToInsert.push({
         title: role.title,
-        description: `${role.desc} Sourced directly from ${source} for ${compName} in ${city} (Posted today, ${dateStr}). Category: ${role.category}. Starting salary ${role.salaryRange}. Applicants can apply directly on ${source} or the official company hiring page.`,
+        description: `${role.desc} Verified official opportunity for ${compName} in ${city} (Updated today, ${dateStr}). Category: ${role.category}. Starting salary: ${role.salaryRange}. Candidates can refer directly to ${compName}'s official career site (${company.website}) or apply via ${source}.`,
         company: company._id,
         location: locationFull,
         city,
@@ -547,28 +557,80 @@ const ensureAllJobsHaveWebsites = async () => {
 };
 
 /**
- * Initialize 24-hour recurring background job ingestion
+ * Daily job update expiry date: December 12, 2027.
+ * After this date, the scheduler will stop collecting new jobs.
+ */
+const SCHEDULER_EXPIRY_DATE = new Date("2027-12-12T23:59:59.999Z");
+
+/**
+ * Clear old crawled jobs and refresh with new daily batch.
+ * Keeps only manually-created jobs (those without an externalJobId) and today's fresh batch.
+ */
+const clearOldCrawledJobs = async () => {
+  try {
+    const oneDayAgo = new Date(Date.now() - 25 * 60 * 60 * 1000);
+    const result = await Job.deleteMany({
+      externalJobId: { $exists: true, $ne: null },
+      createdAt: { $lt: oneDayAgo },
+    });
+    if (result.deletedCount > 0) {
+      console.log(`[DAILY CLEANUP] Removed ${result.deletedCount} stale crawled jobs older than 24 hours.`);
+    }
+  } catch (err) {
+    console.error("[DAILY CLEANUP] Error clearing old jobs:", err.message);
+  }
+};
+
+/**
+ * Check if the scheduler has expired (past December 12, 2027).
+ */
+const isSchedulerExpired = () => {
+  return new Date() > SCHEDULER_EXPIRY_DATE;
+};
+
+/**
+ * Initialize 24-hour recurring background job ingestion.
+ * Jobs are updated daily until December 12, 2027.
  */
 const initDailyScheduler = () => {
-  syncDailyJobs(1000)
+  if (isSchedulerExpired()) {
+    console.log("[SCHEDULER] Daily job updates expired on December 12, 2027. Scheduler will not start.");
+    return;
+  }
+
+  console.log(`[SCHEDULER] Daily Jobs Collector active. Will run daily until ${SCHEDULER_EXPIRY_DATE.toDateString()}.`);
+
+  // Run initial sync on startup
+  clearOldCrawledJobs()
+    .then(() => syncDailyJobs(1000))
     .then(() => ensureAllJobsHaveWebsites())
     .catch(console.error);
 
   const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-  setInterval(() => {
-    console.log("[SCHEDULED TIMER] 24-hour interval triggered. Crawling up to 1,000 jobs from LinkedIn, Naukri & Unstop...");
-    syncDailyJobs(1000)
+  const schedulerInterval = setInterval(() => {
+    if (isSchedulerExpired()) {
+      console.log("[SCHEDULER] December 12, 2027 reached. Stopping daily job collection.");
+      clearInterval(schedulerInterval);
+      return;
+    }
+
+    console.log("[SCHEDULED TIMER] 24-hour interval triggered. Refreshing 1,000 jobs from LinkedIn, Naukri & Unstop...");
+    clearOldCrawledJobs()
+      .then(() => syncDailyJobs(1000))
       .then(() => ensureAllJobsHaveWebsites())
       .catch(console.error);
   }, TWENTY_FOUR_HOURS);
 
-  console.log("[SCHEDULER] Automated 1,000 Daily Jobs Collector (LinkedIn, Naukri & Unstop) Active.");
+  console.log("[SCHEDULER] Automated 1,000 Daily Jobs Collector (LinkedIn, Naukri & Unstop) Active until Dec 12, 2027.");
 };
 
 module.exports = {
   syncDailyJobs,
   initDailyScheduler,
   ensureAllJobsHaveWebsites,
+  clearOldCrawledJobs,
+  isSchedulerExpired,
+  SCHEDULER_EXPIRY_DATE,
   HIRING_COMPANIES,
   CITY_AREAS,
   ROLES_CATALOG,

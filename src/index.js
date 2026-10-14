@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
 import "./index.css";
 
-const API_BASE = "http://localhost:5001";
+const API_BASE = typeof window !== "undefined" && window.location.port === "3000" ? "http://localhost:5001" : "";
 
 // Toast helper context
 const ToastContext = React.createContext({ addToast: () => {} });
@@ -48,17 +48,11 @@ const App = () => {
     addToast("Logged out successfully", "info");
   };
 
-  // Instant 1-click demo switcher
-  const quickLogin = async (role) => {
-    let email = "seeker@portal.com";
-    let password = "seeker123";
-    if (role === "admin") {
-      email = "admin@portal.com";
-      password = "admin123";
-    } else if (role === "company_hr") {
-      email = "hr@techcorp.com";
-      password = "company123";
-    }
+  // Instant 1-click demo login (Job Seeker only)
+  const quickLogin = async () => {
+    const email = "seeker@portal.com";
+    const password = "seeker123";
+    const role = "job_seeker";
 
     try {
       const res = await fetch(`${API_BASE}/api/login`, {
@@ -70,7 +64,7 @@ const App = () => {
       if (res.ok) {
         loginUser(data.user, data.token);
       } else {
-        addToast(data.message || "Failed to switch role", "error");
+        addToast(data.message || "Failed to login", "error");
       }
     } catch (err) {
       addToast("Backend server error: " + err.message, "error");
@@ -82,39 +76,7 @@ const App = () => {
       <AuthContext.Provider value={{ user, login: loginUser, logout: logoutUser, quickLogin }}>
         <Router>
           <div className="app-container">
-            {/* Top Demo Quick-Switch Bar */}
-            <header className="demo-banner">
-              <div className="demo-banner-title">
-                <i className="fa-solid fa-wand-magic-sparkles"></i>
-                <span>Quick Role Switcher (One-Click Demo):</span>
-              </div>
-              <div className="demo-banner-buttons">
-                <button
-                  type="button"
-                  className="demo-chip"
-                  onClick={() => quickLogin("job_seeker")}
-                  title="Switch to Job Seeker persona"
-                >
-                  <i className="fa-solid fa-user"></i> Job Seeker
-                </button>
-                <button
-                  type="button"
-                  className="demo-chip company"
-                  onClick={() => quickLogin("company_hr")}
-                  title="Switch to Company HR persona"
-                >
-                  <i className="fa-solid fa-building"></i> Company HR
-                </button>
-                <button
-                  type="button"
-                  className="demo-chip admin"
-                  onClick={() => quickLogin("admin")}
-                  title="Switch to Admin persona"
-                >
-                  <i className="fa-solid fa-shield-halved"></i> Admin
-                </button>
-              </div>
-            </header>
+
 
             {/* Main Navigation */}
             <NavBar />
@@ -126,8 +88,6 @@ const App = () => {
                 <Route path="/register" element={<Register />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/seeker/dashboard" element={<JobSeekerDashboard />} />
-                <Route path="/company/dashboard" element={<CompanyDashboard />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 {/* Fallback aliases */}
                 <Route path="/job-seeker/dashboard" element={<JobSeekerDashboard />} />
                 <Route path="/jobs" element={<Home />} />
@@ -165,8 +125,6 @@ const NavBar = () => {
 
   const getDashboardPath = () => {
     if (!user) return "/login";
-    if (user.role === "admin") return "/admin/dashboard";
-    if (user.role === "company_hr") return "/company/dashboard";
     return "/seeker/dashboard";
   };
 
@@ -197,16 +155,8 @@ const NavBar = () => {
             </Link>
 
             <div className="nav-user">
-              <span
-                className={`user-badge ${
-                  user.role === "admin"
-                    ? "badge-admin"
-                    : user.role === "company_hr"
-                    ? "badge-company"
-                    : "badge-seeker"
-                }`}
-              >
-                {user.role === "company_hr" ? "Company HR" : user.role.replace("_", " ")}
+              <span className="user-badge badge-seeker">
+                Job Seeker
               </span>
               <span style={{ fontSize: "0.9rem", fontWeight: 600 }}>{user.name}</span>
               <button
@@ -348,7 +298,7 @@ const Home = () => {
     const matchesType = typeFilter === "all" || j.employmentType === typeFilter;
     const matchesLevel = levelFilter === "all" || j.experienceLevel === levelFilter;
 
-    const canSee = user && user.role === "admin" ? true : j.status !== "fraud";
+    const canSee = j.status !== "fraud";
 
     return matchesSearch && matchesCity && matchesSource && matchesCategory && matchesType && matchesLevel && canSee;
   });
@@ -644,18 +594,20 @@ const Home = () => {
                   </div>
                 </div>
 
-                <div className="job-company">
-                  <i className="fa-solid fa-building"></i>
-                  <span>{job.company?.name || "Company"}</span>
-                  {job.companyWebsite && (
+                <div className="job-company-row">
+                  <div className="job-company">
+                    <i className="fa-solid fa-building"></i>
+                    <span>{job.company?.name || "Company"}</span>
+                  </div>
+                  {(job.companyWebsite || job.company?.website) && (
                     <a
-                      href={job.companyWebsite}
+                      href={job.companyWebsite || job.company?.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      style={{ color: "var(--text-dim)", fontSize: "0.8rem", marginLeft: "4px" }}
-                      title="Company Official Website"
+                      className="official-career-site-badge"
+                      title={`Refer official ${job.company?.name || "Company"} careers site`}
                     >
-                      <i className="fa-solid fa-arrow-up-right-from-square"></i>
+                      <i className="fa-solid fa-shield-halved"></i> Official Company Career Site <i className="fa-solid fa-arrow-up-right-from-square" style={{ fontSize: "0.68rem" }}></i>
                     </a>
                   )}
                 </div>
@@ -688,6 +640,17 @@ const Home = () => {
               <div className="job-footer">
                 <span className="salary-tag">{job.salary || "Starting ₹3,00,000 / yr"}</span>
                 <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                  {(job.companyWebsite || job.company?.website) && (
+                    <a
+                      href={job.companyWebsite || job.company?.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-company-careers"
+                      title={`Refer official career portal of ${job.company?.name || "Company"}`}
+                    >
+                      <i className="fa-solid fa-building-circle-check"></i> Company Career Site
+                    </a>
+                  )}
                   {job.applyUrl && (
                     job.source === "LinkedIn" ? (
                       <a
@@ -856,6 +819,33 @@ const Home = () => {
               ))}
             </div>
 
+            {(selectedJob.companyWebsite || selectedJob.company?.website) && (
+              <div className="official-company-card">
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <i className="fa-solid fa-shield-halved" style={{ color: "#10b981", fontSize: "1.4rem" }}></i>
+                    <div>
+                      <div style={{ fontWeight: 700, color: "#fff", fontSize: "0.95rem" }}>
+                        Verified Official Company Career Reference
+                      </div>
+                      <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                        Direct Employer Careers Link: <a href={selectedJob.companyWebsite || selectedJob.company?.website} target="_blank" rel="noopener noreferrer" style={{ color: "#38bdf8", textDecoration: "underline" }}>{selectedJob.companyWebsite || selectedJob.company?.website}</a>
+                      </div>
+                    </div>
+                  </div>
+                  <a
+                    href={selectedJob.companyWebsite || selectedJob.company?.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-success btn-sm"
+                    style={{ background: "rgba(16, 185, 129, 0.2)", border: "1px solid #10b981", color: "#34d399", fontWeight: 700 }}
+                  >
+                    <i className="fa-solid fa-arrow-up-right-from-square"></i> Visit Official Company Site
+                  </a>
+                </div>
+              </div>
+            )}
+
             <div style={{ marginTop: "28px", display: "flex", justifyContent: "flex-end", gap: "12px", flexWrap: "wrap" }}>
               <button
                 type="button"
@@ -864,6 +854,17 @@ const Home = () => {
               >
                 Close
               </button>
+              {(selectedJob.companyWebsite || selectedJob.company?.website) && (
+                <a
+                  href={selectedJob.companyWebsite || selectedJob.company?.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-company-careers"
+                  title="Direct Official Employer Careers Portal"
+                >
+                  <i className="fa-solid fa-globe"></i> Refer Company Site
+                </a>
+              )}
               {selectedJob.applyUrl && (
                 <a
                   href={selectedJob.applyUrl}
@@ -871,7 +872,7 @@ const Home = () => {
                   rel="noopener noreferrer"
                   className="btn btn-direct-link"
                 >
-                  <i className="fa-solid fa-arrow-up-right-from-square"></i> Open Company Careers Portal
+                  <i className="fa-solid fa-arrow-up-right-from-square"></i> Open Application Link
                 </a>
               )}
               {selectedJob.status !== "fraud" && (
@@ -1871,7 +1872,7 @@ const Register = () => {
   const { addToast } = React.useContext(ToastContext);
   const navigate = useNavigate();
 
-  const [role, setRole] = useState("job_seeker");
+  const role = "job_seeker";
   const [signupMethod, setSignupMethod] = useState("mobile"); // "mobile" | "email"
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -1887,12 +1888,9 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload =
-      role === "company_hr"
-        ? { name, email, password: password || "nexhire123", industry, role }
-        : { name, email, phoneNumber: phone, password: password || "nexhire123", role };
+    const payload = { name, email, phoneNumber: phone, password: password || "nexhire123", role };
 
-    const endpoint = role === "company_hr" ? "company" : role === "admin" ? "admin" : "job-seeker";
+    const endpoint = "job-seeker";
 
     try {
       const res = await fetch(`${API_BASE}/api/register/${endpoint}`, {
@@ -1907,10 +1905,7 @@ const Register = () => {
         if (data.token && (data.user || data.company)) {
           login(data.user || data.company, data.token);
           addToast("Account created! You are now signed in.", "success");
-          const u = data.user || data.company;
-          if (u.role === "admin") navigate("/admin/dashboard");
-          else if (u.role === "company_hr") navigate("/company/dashboard");
-          else navigate("/seeker/dashboard");
+          navigate("/seeker/dashboard");
         } else {
           addToast("Registration successful! Please sign in.", "success");
           navigate("/login");
@@ -1985,29 +1980,7 @@ const Register = () => {
         </form>
       ) : (
         <>
-          <div className="role-selector">
-            <button
-              type="button"
-              className={`role-tab ${role === "job_seeker" ? "active" : ""}`}
-              onClick={() => setRole("job_seeker")}
-            >
-              Job Seeker
-            </button>
-            <button
-              type="button"
-              className={`role-tab ${role === "company_hr" ? "active" : ""}`}
-              onClick={() => setRole("company_hr")}
-            >
-              Company HR
-            </button>
-            <button
-              type="button"
-              className={`role-tab ${role === "admin" ? "active" : ""}`}
-              onClick={() => setRole("admin")}
-            >
-              Admin
-            </button>
-          </div>
+
 
           {role === "job_seeker" && (
             <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
@@ -2032,45 +2005,31 @@ const Register = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label className="form-label">{role === "company_hr" ? "Company Name" : "Full Name"}</label>
+              <label className="form-label">Full Name</label>
               <input
                 className="form-control"
-                placeholder={role === "company_hr" ? "e.g. Acme Innovations" : "e.g. Rahul Sharma"}
+                placeholder="e.g. Rahul Sharma"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
 
-            {role === "job_seeker" ? (
-              signupMethod === "mobile" ? (
-                <div className="form-group">
-                  <label className="form-label">Mobile Phone Number (Will Receive OTP)</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="+91 98765 43210"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                  />
-                </div>
-              ) : (
-                <div className="form-group">
-                  <label className="form-label">Email Address (Will Receive OTP)</label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="you@domain.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-              )
+            {signupMethod === "mobile" ? (
+              <div className="form-group">
+                <label className="form-label">Mobile Phone Number (Will Receive OTP)</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="+91 98765 43210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                />
+              </div>
             ) : (
               <div className="form-group">
-                <label className="form-label">Email Address</label>
+                <label className="form-label">Email Address (Will Receive OTP)</label>
                 <input
                   type="email"
                   className="form-control"
@@ -2082,18 +2041,7 @@ const Register = () => {
               </div>
             )}
 
-            {role === "company_hr" && (
-              <div className="form-group">
-                <label className="form-label">Industry Sector</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="e.g. Fintech, Healthcare, SaaS"
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                />
-              </div>
-            )}
+
 
             <div className="form-group">
               <label className="form-label">Password</label>
@@ -2127,22 +2075,13 @@ const Login = () => {
   const { addToast } = React.useContext(ToastContext);
   const navigate = useNavigate();
 
-  const [role, setRole] = useState("job_seeker");
+  const role = "job_seeker";
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
 
-  const fillDemo = (r) => {
-    setRole(r);
-    if (r === "job_seeker") {
-      setEmailOrPhone("seeker@portal.com");
-      setPassword("seeker123");
-    } else if (r === "company_hr") {
-      setEmailOrPhone("hr@techcorp.com");
-      setPassword("company123");
-    } else {
-      setEmailOrPhone("admin@portal.com");
-      setPassword("admin123");
-    }
+  const fillDemo = () => {
+    setEmailOrPhone("seeker@portal.com");
+    setPassword("seeker123");
   };
 
   const handleSubmit = async (e) => {
@@ -2157,9 +2096,7 @@ const Login = () => {
       const data = await res.json();
       if (res.ok) {
         login(data.user, data.token);
-        if (data.user.role === "admin") navigate("/admin/dashboard");
-        else if (data.user.role === "company_hr") navigate("/company/dashboard");
-        else navigate("/seeker/dashboard");
+        navigate("/seeker/dashboard");
       } else {
         addToast(data.message || "Login failed", "error");
       }
@@ -2190,41 +2127,13 @@ const Login = () => {
           One-Click Demo Fill:
         </div>
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => fillDemo("job_seeker")}>
-            Seeker Demo
-          </button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => fillDemo("company_hr")}>
-            HR Demo
-          </button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => fillDemo("admin")}>
-            Admin Demo
+          <button type="button" className="btn btn-secondary btn-sm" onClick={fillDemo}>
+            <i className="fa-solid fa-user"></i> Fill Demo Credentials
           </button>
         </div>
       </div>
 
-      <div className="role-selector">
-        <button
-          type="button"
-          className={`role-tab ${role === "job_seeker" ? "active" : ""}`}
-          onClick={() => setRole("job_seeker")}
-        >
-          Job Seeker
-        </button>
-        <button
-          type="button"
-          className={`role-tab ${role === "company_hr" ? "active" : ""}`}
-          onClick={() => setRole("company_hr")}
-        >
-          Company HR
-        </button>
-        <button
-          type="button"
-          className={`role-tab ${role === "admin" ? "active" : ""}`}
-          onClick={() => setRole("admin")}
-        >
-          Admin
-        </button>
-      </div>
+
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">

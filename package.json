@@ -7,12 +7,13 @@
   "scripts": {
     "start": "node backend/server.js",
     "server": "nodemon --watch backend --ext js backend/server.js",
-    "client": "react-scripts start",
+    "client": "cross-env PORT=3000 react-scripts start",
     "build": "react-scripts build",
     "deploy": "npm run build && serve -s build -l 3000",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "proxy": "http://localhost:5001",
   "keywords": [],
   "license": "ISC",
   "dependencies": {

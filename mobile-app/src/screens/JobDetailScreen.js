@@ -282,6 +282,29 @@ const JobDetailScreen = ({ route, navigation }) => {
           </LinearGradient>
         </View>
 
+        {/* Official Company Career Site Referral */}
+        {(job.companyWebsite || job.company?.website) && (
+          <View style={styles.companyWebsiteCard}>
+            <View style={{ flex: 1, marginRight: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <Ionicons name="shield-checkmark" size={16} color={COLORS.accentGreen} style={{ marginRight: 6 }} />
+                <Text style={styles.companyWebsiteTitle}>Official Company Career Site</Text>
+              </View>
+              <Text style={styles.companyWebsiteDesc} numberOfLines={1}>
+                {job.companyWebsite || job.company?.website}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.companyWebsiteBtn}
+              onPress={() => Linking.openURL(job.companyWebsite || job.company?.website)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.companyWebsiteBtnText}>Visit Site</Text>
+              <Ionicons name="open-outline" size={13} color="#fff" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Description */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -761,6 +784,41 @@ const styles = StyleSheet.create({
   portalApplyText: {
     color: '#fff',
     fontSize: SIZES.sm,
+    ...FONTS.bold,
+  },
+
+  // Company Website Card
+  companyWebsiteCard: {
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderWidth: 1,
+    borderRadius: SIZES.radiusMd,
+    padding: 14,
+    marginBottom: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  companyWebsiteTitle: {
+    color: COLORS.accentGreen,
+    fontSize: SIZES.sm,
+    ...FONTS.bold,
+  },
+  companyWebsiteDesc: {
+    color: COLORS.textMuted,
+    fontSize: SIZES.xs,
+  },
+  companyWebsiteBtn: {
+    backgroundColor: COLORS.accentGreen,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: SIZES.radiusSm,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  companyWebsiteBtnText: {
+    color: '#fff',
+    fontSize: SIZES.xs,
     ...FONTS.bold,
   },
 

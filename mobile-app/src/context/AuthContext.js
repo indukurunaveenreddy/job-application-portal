@@ -113,18 +113,9 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // One-click demo login
-  const quickLogin = async (role) => {
-    let email = 'seeker@portal.com';
-    let password = 'seeker123';
-    if (role === 'admin') {
-      email = 'admin@portal.com';
-      password = 'admin123';
-    } else if (role === 'company_hr') {
-      email = 'hr@techcorp.com';
-      password = 'company123';
-    }
-    return login(email, password, role);
+  // One-click demo login (Job Seeker only)
+  const quickLogin = async () => {
+    return login('seeker@portal.com', 'seeker123', 'job_seeker');
   };
 
   return (
