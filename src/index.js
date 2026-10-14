@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation } from "react-router-dom";
+import { HashRouter as Router, Routes, Route, Link, useNavigate, useLocation, Navigate } from "react-router-dom";
 import "./index.css";
 
 const API_BASE = typeof window !== "undefined" && window.location.port === "3000" ? "http://localhost:5001" : "";
@@ -11,7 +11,6 @@ const AuthContext = React.createContext({
   user: null,
   login: () => {},
   logout: () => {},
-  quickLogin: () => {},
 });
 
 // Main App Container
@@ -48,47 +47,11 @@ const App = () => {
     addToast("Logged out successfully", "info");
   };
 
-  // Instant 1-click demo login (Job Seeker only)
-  const quickLogin = async () => {
-    const email = "seeker@portal.com";
-    const password = "seeker123";
-    const role = "job_seeker";
-
-    try {
-      const res = await fetch(`${API_BASE}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        loginUser(data.user, data.token);
-        return;
-      }
-    } catch (err) {
-      console.warn("Backend server not reachable, using offline demo login:", err.message);
-    }
-
-    // Offline demo fallback (works seamlessly on GitHub Pages)
-    const demoUser = {
-      _id: "demo-seeker-id",
-      name: "Rahul Sharma (Job Seeker)",
-      email: "seeker@portal.com",
-      phoneNumber: "+91 98765 43210",
-      role: "job_seeker",
-      isEmailVerified: true,
-      isPhoneVerified: true,
-    };
-    loginUser(demoUser, "demo-jwt-token-gh-pages");
-    addToast("Logged in as Rahul Sharma (Demo Seeker)", "success");
-  };
-
   return (
     <ToastContext.Provider value={{ addToast }}>
-      <AuthContext.Provider value={{ user, login: loginUser, logout: logoutUser, quickLogin }}>
+      <AuthContext.Provider value={{ user, login: loginUser, logout: logoutUser }}>
         <Router>
           <div className="app-container">
-
 
             {/* Main Navigation */}
             <NavBar />
@@ -96,13 +59,13 @@ const App = () => {
             {/* Pages Routing */}
             <main className="main-content">
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/seeker/dashboard" element={<JobSeekerDashboard />} />
-                {/* Fallback aliases */}
-                <Route path="/job-seeker/dashboard" element={<JobSeekerDashboard />} />
-                <Route path="/jobs" element={<Home />} />
+                <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
+                <Route path="/register" element={!user ? <Register /> : <Navigate to="/" replace />} />
+                <Route path="/" element={user ? <Home /> : <Navigate to="/login" replace />} />
+                <Route path="/jobs" element={user ? <Home /> : <Navigate to="/login" replace />} />
+                <Route path="/seeker/dashboard" element={user ? <JobSeekerDashboard /> : <Navigate to="/login" replace />} />
+                <Route path="/job-seeker/dashboard" element={user ? <JobSeekerDashboard /> : <Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to={user ? "/" : "/login"} replace />} />
               </Routes>
             </main>
 
@@ -166,7 +129,7 @@ const NavBar = () => {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="nav-brand">
+      <Link to={user ? "/" : "/login"} className="nav-brand">
         <div className="brand-icon">
           <i className="fa-solid fa-bolt"></i>
         </div>
@@ -177,12 +140,11 @@ const NavBar = () => {
       </Link>
 
       <div className="nav-links">
-        <Link to="/" className={`nav-link ${location.pathname === "/" ? "active" : ""}`}>
-          <i className="fa-solid fa-briefcase"></i> Explore Jobs
-        </Link>
-
         {user ? (
           <>
+            <Link to="/" className={`nav-link ${location.pathname === "/" ? "active" : ""}`}>
+              <i className="fa-solid fa-briefcase"></i> Explore Jobs
+            </Link>
             <Link
               to={getDashboardPath()}
               className={`nav-link ${location.pathname.includes("dashboard") ? "active" : ""}`}
@@ -390,7 +352,7 @@ const Home = () => {
 
   const handleApply = (job) => {
     if (!user) {
-      addToast("Please sign in or use Quick Demo Switcher to apply", "info");
+      addToast("Please sign in to apply for jobs", "info");
       return;
     }
     setApplyModal(job);
@@ -2036,7 +1998,7 @@ const Register = () => {
     const token = "offline-jwt-" + Date.now();
     login(newUser, token);
     addToast("Account created! You are now signed in.", "success");
-    navigate("/seeker/dashboard");
+    navigate("/");
   };
 
   const handleSubmit = async (e) => {
@@ -2066,7 +2028,7 @@ const Register = () => {
         if (data.token && (data.user || data.company)) {
           login(data.user || data.company, data.token);
           addToast("Account created! You are now signed in.", "success");
-          navigate("/seeker/dashboard");
+          navigate("/");
         } else {
           addToast("Registration successful! Please sign in.", "success");
           navigate("/login");
@@ -2242,30 +2204,8 @@ const Login = () => {
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
 
-  const fillDemo = () => {
-    setEmailOrPhone("seeker@portal.com");
-    setPassword("seeker123");
-  };
-
   // Offline login fallback (works on GitHub Pages)
   const offlineLogin = () => {
-    // Check demo credentials first
-    if (
-      (emailOrPhone === "seeker@portal.com" && password === "seeker123")
-    ) {
-      const demoUser = {
-        _id: "demo-seeker-id",
-        name: "Rahul Sharma (Job Seeker)",
-        email: "seeker@portal.com",
-        phoneNumber: "+91 98765 43210",
-        role: "job_seeker",
-        isEmailVerified: true,
-        isPhoneVerified: true,
-      };
-      login(demoUser, "demo-jwt-token-gh-pages");
-      navigate("/seeker/dashboard");
-      return true;
-    }
     // Check localStorage registered users
     const users = JSON.parse(localStorage.getItem("nexhire_users") || "[]");
     const found = users.find(
@@ -2276,7 +2216,22 @@ const Login = () => {
     if (found) {
       const { password: _, ...safeUser } = found;
       login(safeUser, "offline-jwt-" + Date.now());
-      navigate("/seeker/dashboard");
+      navigate("/");
+      return true;
+    }
+    // Also allow default credentials if explicitly entered
+    if (emailOrPhone === "seeker@portal.com" && password === "seeker123") {
+      const demoUser = {
+        _id: "demo-seeker-id",
+        name: "Job Seeker",
+        email: "seeker@portal.com",
+        phoneNumber: "+91 98765 43210",
+        role: "job_seeker",
+        isEmailVerified: true,
+        isPhoneVerified: true,
+      };
+      login(demoUser, "offline-jwt-" + Date.now());
+      navigate("/");
       return true;
     }
     return false;
@@ -2296,7 +2251,7 @@ const Login = () => {
       if (!contentType.includes("application/json")) {
         console.warn("Backend not available, using offline login");
         if (!offlineLogin()) {
-          addToast("Invalid credentials. Try demo: seeker@portal.com / seeker123", "error");
+          addToast("Invalid email/phone or password. Please sign up or try again.", "error");
         }
         return;
       }
@@ -2304,7 +2259,7 @@ const Login = () => {
       const data = await res.json();
       if (res.ok) {
         login(data.user, data.token);
-        navigate("/seeker/dashboard");
+        navigate("/");
       } else {
         addToast(data.message || "Login failed", "error");
       }
@@ -2312,40 +2267,17 @@ const Login = () => {
       // Network error — use offline fallback
       console.warn("Backend unreachable, using offline login:", err.message);
       if (!offlineLogin()) {
-        addToast("Invalid credentials. Try demo: seeker@portal.com / seeker123", "error");
+        addToast("Invalid email/phone or password. Please sign up or try again.", "error");
       }
     }
   };
 
   return (
     <div className="glass-card auth-card">
-      <h2 style={{ textAlign: "center", marginBottom: "8px" }}>Welcome Back</h2>
+      <h2 style={{ textAlign: "center", marginBottom: "8px" }}>Sign In to NexHire</h2>
       <p style={{ textAlign: "center", color: "var(--text-muted)", marginBottom: "20px" }}>
-        Sign in to your portal account with Email or Mobile Number.
+        Please log in with your credentials to access the job portal.
       </p>
-
-      {/* Demo Credentials Helper */}
-      <div
-        style={{
-          background: "rgba(99, 102, 241, 0.1)",
-          border: "1px dashed rgba(99, 102, 241, 0.3)",
-          borderRadius: "var(--radius-sm)",
-          padding: "10px 14px",
-          marginBottom: "20px",
-          fontSize: "0.82rem",
-        }}
-      >
-        <div style={{ fontWeight: 600, color: "#c7d2fe", marginBottom: "6px" }}>
-          One-Click Demo Fill:
-        </div>
-        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={fillDemo}>
-            <i className="fa-solid fa-user"></i> Fill Demo Credentials
-          </button>
-        </div>
-      </div>
-
-
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
