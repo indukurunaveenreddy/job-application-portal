@@ -44,6 +44,20 @@ const seedData = async () => {
       });
     }
 
+    // 3. Seed Admin User (Naveenreddy / 8639)
+    let admin = await User.findOne({ email: "admin@nexhire.in" });
+    if (!admin) {
+      admin = await User.create({
+        name: "Naveenreddy",
+        email: "admin@nexhire.in",
+        password: await bcrypt.hash("8639", salt),
+        role: "admin",
+        phoneNumber: "+91 8639000000",
+        isPhoneVerified: true,
+        isEmailVerified: true,
+      });
+    }
+
     // 4. Seed Sample Jobs
     await Job.create([
       {

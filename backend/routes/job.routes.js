@@ -80,6 +80,17 @@ router.get("/jobs/stats", async (req, res) => {
   }
 });
 
+// Admin Users List: View all registered users with their name, email, and phone number
+router.get("/admin/users", async (req, res) => {
+  try {
+    const User = require("../models/User.model");
+    const users = await User.find().select("-password").sort({ createdAt: -1 });
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 const {
   submitApplication,
   getMyApplications,

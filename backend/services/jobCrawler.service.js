@@ -492,8 +492,120 @@ const ROLES_CATALOG = [
     minSalaryLpa: 5.5,
     expReq: "0-3 Yrs",
     desc: "Inspect jet engine turbine systems, test aircraft hydraulic pressures, support turnaround on flight lines, and ensure zero-failure airworthiness."
+  },
+  // ===================== INTERNSHIP ROLES =====================
+  {
+    title: "Software Engineering Intern (Summer / Winter 2026)",
+    category: "IT",
+    type: "internship",
+    level: "entry-level",
+    skills: ["Data Structures", "Algorithms", "Python / C++", "JavaScript", "Problem Solving"],
+    salaryRange: "₹45,000 - ₹80,000 / month + PPO",
+    minSalaryLpa: 5.4,
+    expReq: "Student / Fresh Graduate",
+    desc: "Design scalable backend microservices, distributed systems, and real-time APIs under senior mentors. PPO eligible."
+  },
+  {
+    title: "Frontend Developer Intern (React / Next.js)",
+    category: "IT",
+    type: "internship",
+    level: "entry-level",
+    skills: ["React.js", "Next.js", "TypeScript", "Tailwind CSS", "Redux Toolkit"],
+    salaryRange: "₹35,000 - ₹60,000 / month + PPO",
+    minSalaryLpa: 4.2,
+    expReq: "Student / Fresh Graduate",
+    desc: "Build pixel-perfect, responsive web interfaces and design system components with modern animations and state management."
+  },
+  {
+    title: "Backend Engineering Intern (Node.js / Go)",
+    category: "IT",
+    type: "internship",
+    level: "entry-level",
+    skills: ["Node.js", "Express", "MongoDB", "PostgreSQL", "REST APIs"],
+    salaryRange: "₹35,000 - ₹65,000 / month + PPO",
+    minSalaryLpa: 4.2,
+    expReq: "Student / Fresh Graduate",
+    desc: "Develop resilient server-side services, write optimized database queries, implement auth protocols, and benchmark APIs."
+  },
+  {
+    title: "Data Science & GenAI Intern",
+    category: "IT",
+    type: "internship",
+    level: "entry-level",
+    skills: ["Python", "Pandas", "Scikit-Learn", "PyTorch", "LLMs & Prompt Engineering"],
+    salaryRange: "₹40,000 - ₹75,000 / month + PPO",
+    minSalaryLpa: 4.8,
+    expReq: "Student / Fresh Graduate",
+    desc: "Train machine learning models, analyze user behavioral telemetry, and fine-tune open-source LLMs."
+  },
+  {
+    title: "Full Stack Developer Intern",
+    category: "IT",
+    type: "internship",
+    level: "entry-level",
+    skills: ["React", "Node.js", "Express", "MongoDB", "REST APIs"],
+    salaryRange: "₹30,000 - ₹55,000 / month + PPO",
+    minSalaryLpa: 3.6,
+    expReq: "Student / Fresh Graduate",
+    desc: "End-to-end web product development. Deliver frontend screens and implement robust backend REST controllers."
+  },
+  {
+    title: "Cyber Security & Ethical Hacking Intern",
+    category: "Security",
+    type: "internship",
+    level: "entry-level",
+    skills: ["Network Security", "VAPT", "OWASP Top 10", "Burp Suite", "Linux"],
+    salaryRange: "₹30,000 - ₹50,000 / month + PPO",
+    minSalaryLpa: 3.6,
+    expReq: "Student / Fresh Graduate",
+    desc: "Conduct vulnerability scans, audit API endpoints for security loopholes, and reinforce cloud infrastructure security."
+  },
+  {
+    title: "UI/UX Product Design Intern",
+    category: "IT",
+    type: "internship",
+    level: "entry-level",
+    skills: ["Figma", "Wireframing", "User Research", "Prototyping", "Design Systems"],
+    salaryRange: "₹25,000 - ₹45,000 / month + PPO",
+    minSalaryLpa: 3.0,
+    expReq: "Student / Fresh Graduate",
+    desc: "Create intuitive user interfaces, run usability test sessions, and design interactive component states in Figma."
+  },
+  {
+    title: "Associate Product Manager (APM) Intern",
+    category: "Non-IT",
+    type: "internship",
+    level: "entry-level",
+    skills: ["Product Strategy", "Market Research", "Agile / Scrum", "Data Analysis", "Roadmapping"],
+    salaryRange: "₹35,000 - ₹65,000 / month + PPO",
+    minSalaryLpa: 4.2,
+    expReq: "Student / Fresh Graduate",
+    desc: "Collaborate directly with product leadership to analyze feature metrics, write PRDs, and drive sprint velocity."
+  },
+  {
+    title: "Civil Site Engineering & Surveying Intern",
+    category: "Civil",
+    type: "internship",
+    level: "entry-level",
+    skills: ["AutoCAD Civil", "Site Inspection", "RCC Structures", "Quantity Surveying", "BOQ"],
+    salaryRange: "₹20,000 - ₹35,000 / month + Site Allowance",
+    minSalaryLpa: 2.4,
+    expReq: "Student / Fresh Graduate",
+    desc: "Assist senior project engineers at construction sites with structural quality checks, reinforcement inspections, and BOQ."
+  },
+  {
+    title: "Aerospace / Defense Technical Intern",
+    category: "Air Force",
+    type: "internship",
+    level: "entry-level",
+    skills: ["Aerodynamics", "Avionics Systems", "MATLAB", "CAD Modeling", "Quality Control"],
+    salaryRange: "₹25,000 - ₹45,000 / month + Defense Stipend",
+    minSalaryLpa: 3.0,
+    expReq: "Student / Fresh Graduate",
+    desc: "Support defense aviation component testing, inspect telemetry logs, and validate aerodynamic simulations."
   }
 ];
+
 
 /**
  * Generate a direct link for LinkedIn, Naukri, or Unstop

