@@ -394,19 +394,81 @@ const verifyOTP = async (req, res) => {
 
 const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
-    const user = await User.findOne({ email: email ? email.toLowerCase() : "" });
+    const { email, phoneNumber, emailOrPhone } = req.body;
+    const identifier = (emailOrPhone || email || phoneNumber || "").trim();
+    
+    if (!identifier) {
+      return res.status(400).json({ message: "Please enter your Email or Mobile Phone Number." });
+    }
+
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { phoneNumber: identifier },
+        { email: `${identifier.replace(/[^0-9]/g, "")}@mobile.nexhire.com` },
+      ],
+    });
     
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "No account found with this email or phone number." });
     }
     
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
+    const otp = crypto.randomInt(100000, 999999).toString();
+    user.otp = otp;
+    user.otpExpiry = Date.now() + 15 * 60 * 1000;
     await user.save();
     
-    res.json({ message: "Password reset link sent to email" });
+    const targetDest = user.phoneNumber || user.email;
+    res.json({
+      success: true,
+      message: `Password reset OTP has been sent to ${targetDest}.`,
+      otp, // for instant simulation / testing
+      destination: targetDest,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { emailOrPhone, email, phoneNumber, otp, newPassword } = req.body;
+    const identifier = (emailOrPhone || email || phoneNumber || "").trim();
+
+    if (!identifier || !otp || !newPassword) {
+      return res.status(400).json({ message: "Identifier, OTP code, and new password are required." });
+    }
+
+    const user = await User.findOne({
+      $or: [
+        { email: identifier.toLowerCase() },
+        { phoneNumber: identifier },
+        { email: `${identifier.replace(/[^0-9]/g, "")}@mobile.nexhire.com` },
+      ],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    if (user.otp && user.otp !== otp.trim()) {
+      return res.status(400).json({ message: "Invalid OTP code. Please enter the correct OTP." });
+    }
+
+    if (user.otpExpiry && user.otpExpiry < Date.now()) {
+      return res.status(400).json({ message: "OTP has expired. Please request a new reset code." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password reset successful! You can now sign in with your new password.",
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -420,4 +482,5 @@ module.exports = {
   sendOTP,
   verifyOTP,
   forgotPassword,
+  resetPassword,
 };

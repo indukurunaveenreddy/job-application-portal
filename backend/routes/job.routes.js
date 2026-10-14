@@ -8,6 +8,7 @@ const {
   sendOTP,
   verifyOTP,
   forgotPassword,
+  resetPassword,
 } = require("../controllers/auth.controller");
 const { auth, roleCheck } = require("../middleware/auth.middleware");
 const {
@@ -31,6 +32,7 @@ router.post("/send-otp", sendOTP);
 router.post("/auth/send-otp", sendOTP);
 router.post("/verify-otp", verifyOTP);
 router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 // Current user profile
 router.get("/me", auth, (req, res) => {
