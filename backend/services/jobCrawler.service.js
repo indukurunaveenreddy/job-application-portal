@@ -606,6 +606,40 @@ const ROLES_CATALOG = [
   }
 ];
 
+const getQualificationForRole = (role) => {
+  const t = (role.title || "").toLowerCase();
+  const c = (role.category || "").toLowerCase();
+  const isIntern = role.type === "internship" || t.includes("intern");
+
+  if (t.includes("security operations") || t.includes("facility surveillance") || t.includes("helper")) {
+    return "10th / 12th Pass";
+  }
+  if (t.includes("garud") || t.includes("airbase security") || t.includes("supply chain") || t.includes("customer success")) {
+    return "12th Pass / Any Degree";
+  }
+  if (t.includes("indian air force") || t.includes("commissioned officer") || t.includes("airman")) {
+    return "12th (PCM) / B.Tech / Degree";
+  }
+  if (t.includes("avionics") || t.includes("aviation") || t.includes("aerospace")) {
+    return isIntern ? "B.Tech / Degree (Aero/ECE) (Student / Graduate)" : "B.Tech (Aero / ECE) / Diploma";
+  }
+  if (c === "civil" || t.includes("civil") || t.includes("construction") || t.includes("structural")) {
+    return isIntern ? "B.Tech / Diploma in Civil (Student / Graduate)" : "B.Tech / Diploma in Civil";
+  }
+  if (t.includes("product manager") || t.includes("apm") || t.includes("product marketing")) {
+    return isIntern ? "MBA / B.Tech / Degree (Student / Graduate)" : "MBA / B.Tech / Any Degree";
+  }
+  if (c === "non-it" || t.includes("business development") || t.includes("talent acquisition") || t.includes("hr operations") || t.includes("financial analyst") || t.includes("accounting") || t.includes("digital marketing") || t.includes("content strategist") || t.includes("graphic")) {
+    return isIntern ? "Degree / BBA / MBA (Student / Graduate)" : "Degree (Any Graduate) / MBA";
+  }
+  if (isIntern) {
+    return "B.Tech / B.E. / MCA (Student / Graduate)";
+  }
+  if (t.includes("architect") || t.includes("senior") || t.includes("lead")) {
+    return "B.Tech / B.E. / MCA / M.Tech";
+  }
+  return "B.Tech / B.E. / MCA";
+};
 
 /**
  * Generate a direct link for LinkedIn, Naukri, or Unstop
@@ -713,16 +747,17 @@ const syncDailyJobs = async (targetCount = 5000) => {
 
       // Distribute across LinkedIn (33%), Naukri (33%), Unstop (34%)
       const source = SOURCES[i % SOURCES.length];
-      const { applyUrl, externalJobId } = buildDirectLinks(role.title, compName, city, source, i + 1);
+      const qual = getQualificationForRole(role);
 
       jobsToInsert.push({
         title: role.title,
-        description: `${role.desc} Verified official opportunity for ${compName} in ${city} (Updated today, ${dateStr}). Category: ${role.category}. Starting salary: ${role.salaryRange}. Candidates can refer directly to ${compName}'s official career site (${company.website}) or apply via ${source}.`,
+        description: `${role.desc} Verified official opportunity for ${compName} in ${city} (Updated today, ${dateStr}). Category: ${role.category}. 🎓 Minimum Qualification: ${qual}. Starting salary: ${role.salaryRange}. Candidates can refer directly to ${compName}'s official career site (${company.website}) or apply via ${source}.`,
         company: company._id,
         location: locationFull,
         city,
         source,
         category: role.category,
+        qualification: qual,
         minSalaryLpa: role.minSalaryLpa || 3.0,
         externalJobId,
         salary: role.salaryRange,

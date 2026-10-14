@@ -230,6 +230,7 @@ const Home = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
+  const [qualificationFilter, setQualificationFilter] = useState("all");
   const [selectedJob, setSelectedJob] = useState(null);
   const [applyModal, setApplyModal] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -286,7 +287,7 @@ const Home = () => {
   // Reset to first page whenever filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, cityFilter, sourceFilter, categoryFilter, typeFilter, levelFilter]);
+  }, [search, cityFilter, sourceFilter, categoryFilter, typeFilter, levelFilter, qualificationFilter]);
 
   const handleSyncDaily = async () => {
     try {
@@ -344,6 +345,12 @@ const Home = () => {
   const securityCount = jobs.filter((j) => j.category === "Security").length;
   const airForceCount = jobs.filter((j) => j.category === "Air Force" || (j.category && j.category.toLowerCase().includes("air force"))).length;
   const internshipCount = jobs.filter((j) => j.employmentType === "internship" || (j.title && j.title.toLowerCase().includes("intern"))).length;
+  const tenthCount = jobs.filter((j) => (j.qualification || "").includes("10")).length;
+  const twelfthCount = jobs.filter((j) => (j.qualification || "").includes("12")).length;
+  const degreeCount = jobs.filter((j) => (j.qualification || "").toLowerCase().includes("degree") || (j.qualification || "").toLowerCase().includes("graduate")).length;
+  const btechCount = jobs.filter((j) => (j.qualification || "").includes("B.Tech")).length;
+  const mcaCount = jobs.filter((j) => (j.qualification || "").includes("MCA")).length;
+  const mbaCount = jobs.filter((j) => (j.qualification || "").includes("MBA")).length;
 
   const filteredJobs = jobs.filter((j) => {
     const matchesSearch =
@@ -351,6 +358,7 @@ const Home = () => {
       (j.company && j.company.name && j.company.name.toLowerCase().includes(search.toLowerCase())) ||
       (j.skills && j.skills.some((s) => s.toLowerCase().includes(search.toLowerCase()))) ||
       (j.category && j.category.toLowerCase().includes(search.toLowerCase())) ||
+      (j.qualification && j.qualification.toLowerCase().includes(search.toLowerCase())) ||
       j.location.toLowerCase().includes(search.toLowerCase());
 
     const matchesCity =
@@ -377,9 +385,18 @@ const Home = () => {
       (typeFilter === "internship" && (j.employmentType === "internship" || (j.title && j.title.toLowerCase().includes("intern"))));
     const matchesLevel = levelFilter === "all" || j.experienceLevel === levelFilter;
 
+    const matchesQualification =
+      qualificationFilter === "all" ||
+      (qualificationFilter === "10" && (j.qualification || "").includes("10")) ||
+      (qualificationFilter === "12" && (j.qualification || "").includes("12")) ||
+      (qualificationFilter === "degree" && ((j.qualification || "").toLowerCase().includes("degree") || (j.qualification || "").toLowerCase().includes("graduate"))) ||
+      (qualificationFilter === "btech" && (j.qualification || "").includes("B.Tech")) ||
+      (qualificationFilter === "mca" && (j.qualification || "").includes("MCA")) ||
+      (qualificationFilter === "mba" && (j.qualification || "").includes("MBA"));
+
     const canSee = j.status !== "fraud";
 
-    return matchesSearch && matchesCity && matchesSource && matchesCategory && matchesType && matchesLevel && canSee;
+    return matchesSearch && matchesCity && matchesSource && matchesCategory && matchesType && matchesLevel && matchesQualification && canSee;
   });
 
   // Pagination calculation
@@ -546,6 +563,21 @@ const Home = () => {
           <option value="senior">Senior</option>
           <option value="lead">Lead</option>
         </select>
+
+        <select
+          className="select-filter"
+          value={qualificationFilter}
+          onChange={(e) => setQualificationFilter(e.target.value)}
+          style={{ borderColor: "#10b981", color: qualificationFilter !== "all" ? "#34d399" : undefined }}
+        >
+          <option value="all">🎓 All Qualifications (10th, 12th, Degree, B.Tech, MCA, MBA)</option>
+          <option value="10">📜 10th Pass ({tenthCount})</option>
+          <option value="12">📜 12th Pass ({twelfthCount})</option>
+          <option value="degree">🎓 Any Degree / Graduate ({degreeCount})</option>
+          <option value="btech">💻 B.Tech / B.E. ({btechCount})</option>
+          <option value="mca">💻 MCA ({mcaCount})</option>
+          <option value="mba">💼 MBA ({mbaCount})</option>
+        </select>
       </div>
 
       {/* Location Hub Pills, Categories, Platforms (LinkedIn, Naukri, Unstop) & Daily Sync */}
@@ -668,6 +700,56 @@ const Home = () => {
           >
             <i className="fa-solid fa-graduation-cap" style={{ color: "#c084fc" }}></i> Unstop ({unstopCount})
           </button>
+
+          {/* Qualification Pills */}
+          <button
+            type="button"
+            className={`location-pill ${qualificationFilter === "10" ? "active" : ""}`}
+            onClick={() => setQualificationFilter(qualificationFilter === "10" ? "all" : "10")}
+            style={{ borderColor: "#10b981" }}
+          >
+            <i className="fa-solid fa-certificate" style={{ color: "#34d399" }}></i> 10th Pass ({tenthCount})
+          </button>
+          <button
+            type="button"
+            className={`location-pill ${qualificationFilter === "12" ? "active" : ""}`}
+            onClick={() => setQualificationFilter(qualificationFilter === "12" ? "all" : "12")}
+            style={{ borderColor: "#10b981" }}
+          >
+            <i className="fa-solid fa-certificate" style={{ color: "#34d399" }}></i> 12th Pass ({twelfthCount})
+          </button>
+          <button
+            type="button"
+            className={`location-pill ${qualificationFilter === "degree" ? "active" : ""}`}
+            onClick={() => setQualificationFilter(qualificationFilter === "degree" ? "all" : "degree")}
+            style={{ borderColor: "#38bdf8" }}
+          >
+            <i className="fa-solid fa-graduation-cap" style={{ color: "#38bdf8" }}></i> Degree ({degreeCount})
+          </button>
+          <button
+            type="button"
+            className={`location-pill ${qualificationFilter === "btech" ? "active" : ""}`}
+            onClick={() => setQualificationFilter(qualificationFilter === "btech" ? "all" : "btech")}
+            style={{ borderColor: "#6366f1" }}
+          >
+            <i className="fa-solid fa-laptop-code" style={{ color: "#818cf8" }}></i> B.Tech ({btechCount})
+          </button>
+          <button
+            type="button"
+            className={`location-pill ${qualificationFilter === "mca" ? "active" : ""}`}
+            onClick={() => setQualificationFilter(qualificationFilter === "mca" ? "all" : "mca")}
+            style={{ borderColor: "#a855f7" }}
+          >
+            <i className="fa-solid fa-code" style={{ color: "#c084fc" }}></i> MCA ({mcaCount})
+          </button>
+          <button
+            type="button"
+            className={`location-pill ${qualificationFilter === "mba" ? "active" : ""}`}
+            onClick={() => setQualificationFilter(qualificationFilter === "mba" ? "all" : "mba")}
+            style={{ borderColor: "#ec4899" }}
+          >
+            <i className="fa-solid fa-briefcase" style={{ color: "#f472b6" }}></i> MBA ({mbaCount})
+          </button>
         </div>
 
         <button
@@ -736,6 +818,23 @@ const Home = () => {
                       </span>
                     )}
                     <span
+                      style={{
+                        background: "rgba(16,185,129,0.14)",
+                        color: "#34d399",
+                        border: "1px solid rgba(16,185,129,0.35)",
+                        padding: "2px 8px",
+                        borderRadius: "20px",
+                        fontSize: "0.75rem",
+                        fontWeight: 700,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                      title="Verified Minimum Qualification"
+                    >
+                      <i className="fa-solid fa-user-graduate"></i> {job.qualification || "Degree / B.Tech / MCA"}
+                    </span>
+                    <span
                       className={`badge-source ${job.source === "LinkedIn" ? "linkedin" : job.source === "Unstop" ? "unstop" : "naukri"}`}
                     >
                       <i className={job.source === "LinkedIn" ? "fa-brands fa-linkedin" : job.source === "Unstop" ? "fa-solid fa-graduation-cap" : "fa-solid fa-briefcase"}></i>
@@ -782,6 +881,9 @@ const Home = () => {
                   </span>
                   <span className="job-meta-item">
                     <i className="fa-solid fa-layer-group"></i> {job.experienceLevel || "Mid-level"}
+                  </span>
+                  <span className="job-meta-item" style={{ color: "#34d399", fontWeight: 600 }}>
+                    <i className="fa-solid fa-graduation-cap"></i> {job.qualification || "Degree / B.Tech / MCA"}
                   </span>
                 </div>
 
@@ -966,6 +1068,26 @@ const Home = () => {
               </span>
             </div>
 
+            {/* Verified Qualification Requirement */}
+            <div style={{
+              background: "rgba(16, 185, 129, 0.08)",
+              border: "1px solid rgba(16, 185, 129, 0.3)",
+              borderRadius: "10px",
+              padding: "12px 16px",
+              marginBottom: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+            }}>
+              <i className="fa-solid fa-graduation-cap" style={{ fontSize: "1.4rem", color: "#10b981" }}></i>
+              <div>
+                <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "2px" }}>Verified Minimum Qualification Requirement</div>
+                <div style={{ color: "#34d399", fontWeight: 700, fontSize: "1rem" }}>
+                  {selectedJob.qualification || "Degree / B.Tech / MCA / MBA"}
+                </div>
+              </div>
+            </div>
+
             <h4 style={{ marginBottom: "8px" }}>Position Overview</h4>
             <p style={{ color: "var(--text-muted)", lineHeight: 1.7, marginBottom: "24px" }}>
               {selectedJob.description}
@@ -1068,6 +1190,24 @@ const Home = () => {
               </button>
             </div>
 
+            {/* Verified Qualification in Apply Modal */}
+            <div style={{
+              background: "rgba(16, 185, 129, 0.1)",
+              border: "1px solid rgba(16, 185, 129, 0.3)",
+              borderRadius: "10px",
+              padding: "10px 14px",
+              marginBottom: "16px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}>
+              <i className="fa-solid fa-graduation-cap" style={{ color: "#10b981", fontSize: "1.2rem" }}></i>
+              <div style={{ fontSize: "0.88rem" }}>
+                <span style={{ color: "var(--text-muted)" }}>Verified Requirement: </span>
+                <strong style={{ color: "#34d399" }}>{applyModal.qualification || "Degree / B.Tech / MCA / MBA"}</strong>
+              </div>
+            </div>
+
             <form onSubmit={submitApplication}>
               <div className="form-group">
                 <label className="form-label">Full Name</label>
@@ -1078,6 +1218,19 @@ const Home = () => {
                   name="candidateName"
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Your Highest Educational Qualification</label>
+                <select className="form-control" id="candidateQualification" name="candidateQualification" required defaultValue="B.Tech / B.E.">
+                  <option value="10th Pass">10th Pass</option>
+                  <option value="12th Pass">12th Pass / Intermediate</option>
+                  <option value="Degree / Any Graduate">Degree / Any Graduate (B.Com, B.Sc, BA, BBA)</option>
+                  <option value="B.Tech / B.E.">B.Tech / B.E. (Bachelor of Technology / Engineering)</option>
+                  <option value="MCA">MCA (Master of Computer Applications)</option>
+                  <option value="MBA">MBA (Master of Business Administration)</option>
+                  <option value="Other Post Graduate">Other Post Graduate / M.Tech</option>
+                </select>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>

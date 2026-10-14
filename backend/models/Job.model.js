@@ -23,6 +23,10 @@ const jobSchema = new Schema(
       enum: ["entry-level", "mid-level", "senior", "lead"] 
     },
     skills: [{ type: String }],
+    qualification: { 
+      type: String, 
+      default: "Degree / B.Tech / MCA" 
+    },
     applyUrl: { type: String },
     companyWebsite: { type: String },
     city: { 
