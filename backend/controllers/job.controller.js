@@ -87,7 +87,7 @@ const getAllJobs = async (req, res) => {
       query.location = new RegExp(location, "i");
     }
     
-    const maxLimit = limit ? Math.min(parseInt(limit), 1000) : 1000;
+    const maxLimit = limit ? Math.min(parseInt(limit), 5000) : 5000;
     const pageNum = page ? Math.max(parseInt(page), 1) : 1;
     const skip = (pageNum - 1) * maxLimit;
     

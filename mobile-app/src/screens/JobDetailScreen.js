@@ -155,13 +155,29 @@ const JobDetailScreen = ({ route, navigation }) => {
           <View style={{ flexDirection: 'row', gap: 6, marginBottom: 8, alignItems: 'center' }}>
             <View style={[
               styles.sourceBadge,
-              { backgroundColor: job.category === 'Non-IT' ? COLORS.accentPink + '20' : COLORS.accent + '20' }
+              {
+                backgroundColor:
+                  job.category === 'Civil' ? '#f59e0b25' :
+                  job.category === 'Security' ? '#10b98125' :
+                  job.category === 'Air Force' ? '#38bdf825' :
+                  job.category === 'Non-IT' ? COLORS.accentPink + '20' : COLORS.accent + '20'
+              }
             ]}>
               <Text style={[
                 styles.sourceBadgeText,
-                { color: job.category === 'Non-IT' ? COLORS.accentPink : COLORS.accent, fontWeight: '700' }
+                {
+                  color:
+                    job.category === 'Civil' ? '#f59e0b' :
+                    job.category === 'Security' ? '#10b981' :
+                    job.category === 'Air Force' ? '#38bdf8' :
+                    job.category === 'Non-IT' ? COLORS.accentPink : COLORS.accent,
+                  fontWeight: '700'
+                }
               ]}>
-                {job.category === 'Non-IT' ? '💼 Non-IT' : '💻 IT Tech'}
+                {job.category === 'Civil' ? '🏗️ Civil' :
+                 job.category === 'Security' ? '🛡️ Security' :
+                 job.category === 'Air Force' ? '✈️ Air Force' :
+                 job.category === 'Non-IT' ? '💼 Non-IT' : '💻 IT Tech'}
               </Text>
             </View>
 

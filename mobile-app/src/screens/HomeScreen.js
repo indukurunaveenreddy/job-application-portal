@@ -93,6 +93,9 @@ const HomeScreen = ({ navigation }) => {
   const unstopCount = jobs.filter(j => j.source === 'Unstop').length;
   const itCount = jobs.filter(j => j.category === 'IT' || !j.category).length;
   const nonItCount = jobs.filter(j => j.category === 'Non-IT').length;
+  const civilCount = jobs.filter(j => j.category === 'Civil').length;
+  const securityCount = jobs.filter(j => j.category === 'Security').length;
+  const airForceCount = jobs.filter(j => j.category === 'Air Force').length;
 
   // Filter
   const filtered = jobs.filter(j => {
@@ -111,7 +114,10 @@ const HomeScreen = ({ navigation }) => {
     const matchSource = sourceFilter === 'all' || j.source === sourceFilter;
     const matchCategory = categoryFilter === 'all' ||
       (categoryFilter === 'IT' && (j.category === 'IT' || !j.category)) ||
-      (categoryFilter === 'Non-IT' && j.category === 'Non-IT');
+      (categoryFilter === 'Non-IT' && j.category === 'Non-IT') ||
+      (categoryFilter === 'Civil' && j.category === 'Civil') ||
+      (categoryFilter === 'Security' && j.category === 'Security') ||
+      (categoryFilter === 'Air Force' && j.category === 'Air Force');
     const matchType = typeFilter === 'all' || j.employmentType === typeFilter;
 
     return matchSearch && matchCity && matchSource && matchCategory && matchType;
@@ -159,13 +165,29 @@ const HomeScreen = ({ navigation }) => {
           <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
             <View style={[
               styles.sourceBadge,
-              { backgroundColor: job.category === 'Non-IT' ? COLORS.accentPink + '20' : COLORS.accent + '20' }
+              {
+                backgroundColor:
+                  job.category === 'Civil' ? '#f59e0b25' :
+                  job.category === 'Security' ? '#10b98125' :
+                  job.category === 'Air Force' ? '#38bdf825' :
+                  job.category === 'Non-IT' ? COLORS.accentPink + '20' : COLORS.accent + '20'
+              }
             ]}>
               <Text style={[
                 styles.sourceBadgeText,
-                { color: job.category === 'Non-IT' ? COLORS.accentPink : COLORS.accent, fontWeight: '700' }
+                {
+                  color:
+                    job.category === 'Civil' ? '#f59e0b' :
+                    job.category === 'Security' ? '#10b981' :
+                    job.category === 'Air Force' ? '#38bdf8' :
+                    job.category === 'Non-IT' ? COLORS.accentPink : COLORS.accent,
+                  fontWeight: '700'
+                }
               ]}>
-                {job.category === 'Non-IT' ? 'Non-IT' : 'IT'}
+                {job.category === 'Civil' ? '🏗️ Civil' :
+                 job.category === 'Security' ? '🛡️ Security' :
+                 job.category === 'Air Force' ? '✈️ Air Force' :
+                 job.category === 'Non-IT' ? 'Non-IT' : 'IT'}
               </Text>
             </View>
 
@@ -325,16 +347,16 @@ const HomeScreen = ({ navigation }) => {
       <LinearGradient colors={COLORS.gradientHero} style={styles.heroSection}>
         <View style={styles.heroPill}>
           <Ionicons name="sparkles" size={14} color={COLORS.accentPurple} />
-          <Text style={styles.heroPillText}>1,000+ Daily Openings • LinkedIn, Naukri & Unstop</Text>
+          <Text style={styles.heroPillText}>5,000+ Daily Openings • LinkedIn, Naukri & Unstop</Text>
         </View>
 
         <Text style={styles.heroTitle}>
-          Top Tech & Startup Careers in{'\n'}
+          Top Tech, Civil, Security & Defense Careers in{'\n'}
           <Text style={{ color: COLORS.primary }}>BLR, HYD, Pune & Mumbai</Text>
         </Text>
 
         <Text style={styles.heroSubtitle}>
-          IT & Non-IT roles at top startups starting from ₹3 LPA with direct company links.
+          IT, Non-IT, Civil, Security & Air Force opportunities starting from ₹3 LPA with direct company links.
         </Text>
 
         {/* Stats Row */}
@@ -346,6 +368,9 @@ const HomeScreen = ({ navigation }) => {
           {renderStatCard('Mumbai', mumbaiCount, 'location', COLORS.mumbai || '#f59e0b')}
           {renderStatCard('IT Tech', itCount, 'laptop-outline', COLORS.accent)}
           {renderStatCard('Non-IT', nonItCount, 'person-outline', COLORS.accentPink)}
+          {renderStatCard('Civil', civilCount, 'business-outline', '#f59e0b')}
+          {renderStatCard('Security', securityCount, 'shield-checkmark-outline', '#10b981')}
+          {renderStatCard('Air Force', airForceCount, 'airplane-outline', '#38bdf8')}
           {renderStatCard('Unstop', unstopCount, 'school-outline', COLORS.unstop || '#8b5cf6')}
         </ScrollView>
       </LinearGradient>
@@ -356,7 +381,7 @@ const HomeScreen = ({ navigation }) => {
           <Ionicons name="search" size={20} color={COLORS.textMuted} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search role, startup, tech or non-it skill..."
+            placeholder="Search role, civil, security, air force, skills..."
             placeholderTextColor={COLORS.textMuted}
             value={search}
             onChangeText={setSearch}
@@ -390,6 +415,27 @@ const HomeScreen = ({ navigation }) => {
           active={categoryFilter === 'Non-IT'}
           onPress={() => setCategoryFilter(categoryFilter === 'Non-IT' ? 'all' : 'Non-IT')}
           activeColor={COLORS.accentPink}
+        />
+        <FilterPill
+          label={`🏗️ Civil (${civilCount})`}
+          icon="construct-outline"
+          active={categoryFilter === 'Civil'}
+          onPress={() => setCategoryFilter(categoryFilter === 'Civil' ? 'all' : 'Civil')}
+          activeColor="#f59e0b"
+        />
+        <FilterPill
+          label={`🛡️ Security (${securityCount})`}
+          icon="shield-outline"
+          active={categoryFilter === 'Security'}
+          onPress={() => setCategoryFilter(categoryFilter === 'Security' ? 'all' : 'Security')}
+          activeColor="#10b981"
+        />
+        <FilterPill
+          label={`✈️ Air Force (${airForceCount})`}
+          icon="airplane-outline"
+          active={categoryFilter === 'Air Force'}
+          onPress={() => setCategoryFilter(categoryFilter === 'Air Force' ? 'all' : 'Air Force')}
+          activeColor="#38bdf8"
         />
       </ScrollView>
 

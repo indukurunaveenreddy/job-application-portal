@@ -216,6 +216,13 @@ const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         )}
 
+        <View style={{ alignItems: 'center', marginTop: 24, marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(99, 102, 241, 0.12)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(99, 102, 241, 0.3)' }}>
+            <Ionicons name="sparkles" size={14} color="#818cf8" />
+            <Text style={{ color: '#a5b4fc', fontSize: 13, fontWeight: '700' }}>Designed by Naveenreddy</Text>
+          </View>
+        </View>
+
         <View style={{ height: 100 }} />
       </ScrollView>
     </View>

@@ -11,7 +11,7 @@ const jobSchema = new Schema(
     minSalaryLpa: { type: Number, default: 3 },
     category: {
       type: String,
-      enum: ["IT", "Non-IT"],
+      enum: ["IT", "Non-IT", "Civil", "Security", "Air Force", "Other"],
       default: "IT",
     },
     employmentType: { 

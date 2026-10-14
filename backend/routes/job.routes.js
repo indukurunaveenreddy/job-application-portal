@@ -50,9 +50,9 @@ router.get("/me", auth, (req, res) => {
 router.post("/jobs/sync-daily", async (req, res) => {
   try {
     const { syncDailyJobs } = require("../services/jobCrawler.service");
-    const count = req.body && req.body.count ? parseInt(req.body.count) : 1000;
+    const count = req.body && req.body.count ? parseInt(req.body.count) : 5000;
     const result = await syncDailyJobs(count);
-    res.json({ message: `Successfully synced up to ${count} daily jobs from LinkedIn & Naukri!`, ...result });
+    res.json({ message: `Successfully synced up to ${count} daily jobs from LinkedIn, Naukri & Unstop!`, ...result });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -71,7 +71,10 @@ router.get("/jobs/stats", async (req, res) => {
     const unstop = await Job.countDocuments({ source: "Unstop" });
     const itCount = await Job.countDocuments({ category: "IT" });
     const nonItCount = await Job.countDocuments({ category: "Non-IT" });
-    res.json({ total, blr, hyd, pune, mumbai, linkedIn, naukri, unstop, itCount, nonItCount });
+    const civilCount = await Job.countDocuments({ category: "Civil" });
+    const securityCount = await Job.countDocuments({ category: "Security" });
+    const airForceCount = await Job.countDocuments({ category: "Air Force" });
+    res.json({ total, blr, hyd, pune, mumbai, linkedIn, naukri, unstop, itCount, nonItCount, civilCount, securityCount, airForceCount });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

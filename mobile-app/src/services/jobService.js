@@ -36,13 +36,23 @@ const STARTUP_COMPANIES = [
   { name: 'Amazon India', website: 'https://www.amazon.jobs' },
   { name: 'TCS', website: 'https://www.tcs.com/careers' },
   { name: 'Infosys', website: 'https://www.infosys.com/careers' },
+  { name: 'L&T Construction', website: 'https://www.larsentoubro.com/careers' },
+  { name: 'Tata Projects', website: 'https://www.tataprojects.com/careers' },
+  { name: 'Afcons Infrastructure', website: 'https://www.afcons.com/en/careers' },
+  { name: 'Quick Heal Technologies', website: 'https://www.quickheal.co.in/careers' },
+  { name: 'Palo Alto Networks India', website: 'https://jobs.paloaltonetworks.com' },
+  { name: 'SIS Group Enterprises', website: 'https://www.sisindia.com/careers' },
+  { name: 'Indian Air Force (IAF)', website: 'https://afcat.cdac.in' },
+  { name: 'Hindustan Aeronautics Limited (HAL)', website: 'https://hal-india.co.in/Career' },
+  { name: 'DRDO', website: 'https://www.drdo.gov.in/careers' },
+  { name: 'Bharat Electronics Limited (BEL)', website: 'https://bel-india.in/Careers' },
 ];
 
 const CITY_AREAS = {
-  Bangalore: ['Bellandur, ORR', 'Whitefield ITPL', 'Koramangala 4th Block', 'Electronic City Phase 1', 'HSR Layout Sector 2'],
-  Hyderabad: ['HITEC City Cyber Towers', 'Knowledge City Raidurg', 'Financial District Gachibowli', 'Madhapur Mindspace'],
-  Pune: ['Hinjawadi Infotech Park Phase 1', 'Kharadi EON Free Zone', 'Viman Nagar Weikfield', 'Magarpatta Cybercity'],
-  Mumbai: ['BKC Bandra Kurla Complex', 'Powai Hiranandani', 'Lower Parel Peninsula Park', 'Airoli Mindspace Tech Park'],
+  Bangalore: ['Bellandur, ORR', 'Whitefield ITPL', 'Koramangala 4th Block', 'Electronic City Phase 1', 'HSR Layout Sector 2', 'Yelahanka Air Force Station'],
+  Hyderabad: ['HITEC City Cyber Towers', 'Knowledge City Raidurg', 'Financial District Gachibowli', 'Madhapur Mindspace', 'Dundigal Air Force Academy Area'],
+  Pune: ['Hinjawadi Infotech Park Phase 1', 'Kharadi EON Free Zone', 'Viman Nagar Weikfield', 'Magarpatta Cybercity', 'Lohegaon Air Force Station Zone'],
+  Mumbai: ['BKC Bandra Kurla Complex', 'Powai Hiranandani', 'Lower Parel Peninsula Park', 'Airoli Mindspace Tech Park', 'Santacruz Defense Airbase Corridor'],
 };
 
 const ROLES_LIST = [
@@ -61,12 +71,28 @@ const ROLES_LIST = [
   { title: 'Backend Node.js & Express Developer', category: 'IT', salary: '₹8,00,000 - ₹17,00,000 / yr', skills: ['Node.js', 'Express', 'MongoDB', 'PostgreSQL', 'Redis'], type: 'full-time', level: 'mid-level', desc: 'Design microservices, authenticate requests via JWT, and scale database throughput.' },
   { title: 'Mobile App Developer (React Native / Expo)', category: 'IT', salary: '₹8,50,000 - ₹18,00,000 / yr', skills: ['React Native', 'Expo', 'Mobile UI', 'Offline Sync'], type: 'full-time', level: 'mid-level', desc: 'Build cross-platform applications published to Google Play Store and Apple App Store.' },
   { title: 'Senior Full Stack Engineer', category: 'IT', salary: '₹18,00,000 - ₹34,00,000 / yr', skills: ['React', 'Node.js', 'TypeScript', 'AWS', 'PostgreSQL'], type: 'full-time', level: 'senior', desc: 'Lead architecture of mission-critical systems and mentor engineers across the full stack.' },
+
+  // Civil Engineering Roles
+  { title: 'Civil Site Engineer & Construction Supervisor', category: 'Civil', salary: '₹4,50,000 - ₹9,00,000 / yr', skills: ['AutoCAD Civil', 'Site Supervision', 'RCC Construction', 'BOQ & Estimation', 'Surveying'], type: 'full-time', level: 'entry-level', desc: 'Oversee on-site construction activities, concrete pours, site quality inspections, surveying, and contractor coordination.' },
+  { title: 'Structural Design Engineer (Civil & High-Rise)', category: 'Civil', salary: '₹6,50,000 - ₹14,50,000 / yr', skills: ['STAAD.Pro', 'ETABS', 'Structural Analysis', 'Concrete Technology', 'AutoCAD Civil 3D'], type: 'full-time', level: 'mid-level', desc: 'Perform 3D structural analysis, design earthquake-resistant RCC/steel frame structures, and review load specifications.' },
+  { title: 'Civil Project Planning & Billing Engineer', category: 'Civil', salary: '₹5,00,000 - ₹11,00,000 / yr', skills: ['Primavera P6', 'MS Project', 'Billing & Invoicing', 'QA/QC', 'Construction Safety'], type: 'full-time', level: 'mid-level', desc: 'Formulate construction milestones, manage project Gantt schedules, execute contractor billing, and audit material quality.' },
+
+  // Security & Cyber Defense Roles
+  { title: 'Cyber Security Analyst & Threat Hunter', category: 'Security', salary: '₹7,00,000 - ₹16,00,000 / yr', skills: ['SIEM (Splunk/QRadar)', 'Incident Response', 'VAPT', 'Firewalls', 'Network Security'], type: 'full-time', level: 'mid-level', desc: 'Protect critical enterprise networks, monitor real-time SIEM alerts, perform vulnerability assessments, and mitigate zero-day attack vectors.' },
+  { title: 'Information Security Officer & SOC Specialist', category: 'Security', salary: '₹8,50,000 - ₹18,50,000 / yr', skills: ['SOC Operations', 'Threat Intelligence', 'ISO 27001', 'Endpoint Detection (EDR)', 'Penetration Testing'], type: 'full-time', level: 'mid-level', desc: 'Oversee 24/7 Security Operations Center monitoring, investigate security incidents, enforce ISO 27001 compliance, and configure EDR tools.' },
+  { title: 'Security Operations & Facility Surveillance Supervisor', category: 'Security', salary: '₹3,80,000 - ₹7,20,000 / yr', skills: ['Access Control', 'CCTV Surveillance', 'Emergency Protocol', 'Risk Assessment', 'Physical Security'], type: 'full-time', level: 'entry-level', desc: 'Manage access control systems, monitor CCTV command centers, lead emergency drills, and audit campus physical security standards.' },
+
+  // Air Force & Defense Roles
+  { title: 'Indian Air Force (IAF) - Commissioned Officer (Flying & Technical)', category: 'Air Force', salary: '₹8,50,000 - ₹19,50,000 / yr + Defense Perks', skills: ['Aeronautical Engineering', 'AFCAT Qualified', 'Aviation Navigation', 'Tactical Operations', 'Flight Protocol'], type: 'full-time', level: 'mid-level', desc: 'Lead cutting-edge military aviation wings, oversee radar networks, airbase security, and precision aerospace engineering systems for national defense.' },
+  { title: 'Air Force Security Specialist (Garud Base Defense & Airfield Security)', category: 'Air Force', salary: '₹6,50,000 - ₹15,00,000 / yr + Defense Allowances', skills: ['Airbase Security', 'Perimeter Defense', 'Tactical Counter-Terror', 'Emergency Airfield Protocol', 'Weapons Systems'], type: 'full-time', level: 'mid-level', desc: 'Guard frontline military airbases, execute airfield counter-sabotage operations, manage perimeter defense, and lead tactical quick reaction teams.' },
+  { title: 'Aviation Avionics & Radar Maintenance Engineer (Air Force Defense Systems)', category: 'Air Force', salary: '₹7,50,000 - ₹17,00,000 / yr', skills: ['Avionics Systems', 'Defense Radars', 'Aircraft Electricals', 'Diagnostic Flight Test', 'Electronic Warfare Systems'], type: 'full-time', level: 'mid-level', desc: 'Maintain military radar telemetry, aircraft flight control computers, communication sets, and electronic countermeasures.' },
+  { title: 'Air Force Technical Airman & Propulsion Support Engineer', category: 'Air Force', salary: '₹5,50,000 - ₹12,00,000 / yr + Military Perks', skills: ['Jet Engine Propulsion', 'Airframe Maintenance', 'Ground Support Equipment', 'Quality Inspection', 'Flight Line Safety'], type: 'full-time', level: 'entry-level', desc: 'Inspect jet engine turbine systems, test aircraft hydraulic pressures, support turnaround on flight lines, and ensure zero-failure airworthiness.' },
 ];
 
 /**
  * Generate embedded verified job pool (used for offline-first and immediate store demonstration)
  */
-export const generateStandaloneJobs = (count = 1000) => {
+export const generateStandaloneJobs = (count = 5000) => {
   const cities = ['Bangalore', 'Hyderabad', 'Pune', 'Mumbai'];
   const sources = ['LinkedIn', 'Naukri', 'Unstop'];
   const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
@@ -123,7 +149,7 @@ export const getOrFetchJobs = async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-    const res = await fetch(`${ENDPOINTS.jobs}?limit=1000`, { signal: controller.signal });
+    const res = await fetch(`${ENDPOINTS.jobs}?limit=5000`, { signal: controller.signal });
     clearTimeout(timeoutId);
 
     if (res.ok) {
@@ -149,7 +175,7 @@ export const getOrFetchJobs = async () => {
   }
 
   // Generate self-contained fresh jobs
-  const standaloneJobs = generateStandaloneJobs(1000);
+  const standaloneJobs = generateStandaloneJobs(5000);
   await AsyncStorage.setItem(JOBS_STORAGE_KEY, JSON.stringify(standaloneJobs)).catch(() => {});
   return standaloneJobs;
 };

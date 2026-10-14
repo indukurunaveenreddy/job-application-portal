@@ -70,6 +70,23 @@ const HIRING_COMPANIES = [
   { name: "Walmart Global Tech", domain: "walmart.com", industry: "Retail Tech & Supply Chain", size: "10,000+", website: "https://careers.walmart.com" },
   { name: "Target India", domain: "target.com", industry: "Global Retail & Tech GCC", size: "5,000+", website: "https://india.target.com/careers" },
   { name: "Paytm", domain: "paytm.com", industry: "Digital Payments & Financial Services", size: "5,000+", website: "https://paytm.com/careers" },
+
+  // Civil & Heavy Infrastructure Leaders
+  { name: "L&T Construction", domain: "larsentoubro.com", industry: "Civil Engineering & Heavy Infrastructure", size: "10,000+", website: "https://www.larsentoubro.com/careers" },
+  { name: "Tata Projects", domain: "tataprojects.com", industry: "EPC & Civil Construction", size: "5,000+", website: "https://www.tataprojects.com/careers" },
+  { name: "Afcons Infrastructure", domain: "afcons.com", industry: "Infrastructure & Metro Engineering", size: "5,000+", website: "https://www.afcons.com/en/careers" },
+  { name: "DLF Limited", domain: "dlf.in", industry: "Real Estate & Civil Infrastructure", size: "2,000+", website: "https://www.dlf.in/careers" },
+
+  // Security & Cyber Defense Leaders
+  { name: "Quick Heal Technologies", domain: "quickheal.co.in", industry: "Cyber Security & Threat Intelligence", size: "1,000-5,000", website: "https://www.quickheal.co.in/careers" },
+  { name: "Palo Alto Networks India", domain: "paloaltonetworks.com", industry: "Cyber Security & Cloud Defense", size: "5,000+", website: "https://jobs.paloaltonetworks.com" },
+  { name: "SIS Group Enterprises", domain: "sisindia.com", industry: "Security & Surveillance Solutions", size: "10,000+", website: "https://www.sisindia.com/careers" },
+
+  // Air Force, Defense & Aerospace Engineering
+  { name: "Indian Air Force (IAF)", domain: "indianairforce.nic.in", industry: "Defense & Military Aviation", size: "10,000+", website: "https://afcat.cdac.in" },
+  { name: "Hindustan Aeronautics Limited (HAL)", domain: "hal-india.co.in", industry: "Aerospace & Military Aircraft", size: "10,000+", website: "https://hal-india.co.in/Career" },
+  { name: "DRDO (Defense Research & Development)", domain: "drdo.gov.in", industry: "Defense Technology & Avionics", size: "10,000+", website: "https://www.drdo.gov.in/careers" },
+  { name: "Bharat Electronics Limited (BEL)", domain: "bel-india.in", industry: "Defense Radars & Avionics", size: "10,000+", website: "https://bel-india.in/Careers" },
 ];
 
 // Major tech and commercial areas across all 4 top cities
@@ -337,6 +354,144 @@ const ROLES_CATALOG = [
     minSalaryLpa: 26.0,
     expReq: "7-12 Yrs",
     desc: "Architect low-latency financial settlement engines processing tens of thousands of concurrent event streams."
+  },
+
+  // ===================== CIVIL ENGINEERING ROLES =====================
+  {
+    title: "Civil Site Engineer & Construction Supervisor",
+    category: "Civil",
+    type: "full-time",
+    level: "entry-level",
+    skills: ["AutoCAD Civil", "Site Supervision", "RCC Construction", "BOQ & Estimation", "Surveying"],
+    salaryRange: "₹4,50,000 - ₹9,00,000 / yr",
+    minSalaryLpa: 4.5,
+    expReq: "0-3 Yrs",
+    desc: "Oversee on-site construction activities, concrete pours, site quality inspections, surveying, and contractor coordination."
+  },
+  {
+    title: "Structural Design Engineer (Civil & High-Rise)",
+    category: "Civil",
+    type: "full-time",
+    level: "mid-level",
+    skills: ["STAAD.Pro", "ETABS", "Structural Analysis", "Concrete Technology", "AutoCAD Civil 3D"],
+    salaryRange: "₹6,50,000 - ₹14,50,000 / yr",
+    minSalaryLpa: 6.5,
+    expReq: "2-5 Yrs",
+    desc: "Perform 3D structural analysis, design earthquake-resistant RCC/steel frame structures, and review load specifications."
+  },
+  {
+    title: "Civil Project Planning & Billing Engineer",
+    category: "Civil",
+    type: "full-time",
+    level: "mid-level",
+    skills: ["Primavera P6", "MS Project", "Billing & Invoicing", "QA/QC", "Construction Safety"],
+    salaryRange: "₹5,00,000 - ₹11,00,000 / yr",
+    minSalaryLpa: 5.0,
+    expReq: "2-5 Yrs",
+    desc: "Formulate construction milestones, manage project Gantt schedules, execute contractor billing, and audit material quality."
+  },
+  {
+    title: "Highway & Infrastructure Geotechnical Engineer",
+    category: "Civil",
+    type: "full-time",
+    level: "mid-level",
+    skills: ["Pavement Design", "Soil Mechanics", "Total Station / GPS", "MoRTH Guidelines", "GIS Mapping"],
+    salaryRange: "₹5,50,000 - ₹12,00,000 / yr",
+    minSalaryLpa: 5.5,
+    expReq: "1-4 Yrs",
+    desc: "Conduct soil bearing capacity analysis, design expressway pavement layers, and monitor alignment surveying."
+  },
+
+  // ===================== SECURITY & CYBER DEFENSE ROLES =====================
+  {
+    title: "Cyber Security Analyst & Threat Hunter",
+    category: "Security",
+    type: "full-time",
+    level: "mid-level",
+    skills: ["SIEM (Splunk/QRadar)", "Incident Response", "VAPT", "Firewalls", "Network Security"],
+    salaryRange: "₹7,00,000 - ₹16,00,000 / yr",
+    minSalaryLpa: 7.0,
+    expReq: "2-5 Yrs",
+    desc: "Protect critical enterprise networks, monitor real-time SIEM alerts, perform vulnerability assessments, and mitigate zero-day attack vectors."
+  },
+  {
+    title: "Information Security Officer & SOC Specialist",
+    category: "Security",
+    type: "full-time",
+    level: "mid-level",
+    skills: ["SOC Operations", "Threat Intelligence", "ISO 27001", "Endpoint Detection (EDR)", "Penetration Testing"],
+    salaryRange: "₹8,50,000 - ₹18,50,000 / yr",
+    minSalaryLpa: 8.5,
+    expReq: "3-6 Yrs",
+    desc: "Oversee 24/7 Security Operations Center monitoring, investigate security incidents, enforce ISO 27001 compliance, and configure EDR tools."
+  },
+  {
+    title: "Security Operations & Facility Surveillance Supervisor",
+    category: "Security",
+    type: "full-time",
+    level: "entry-level",
+    skills: ["Access Control", "CCTV Surveillance", "Emergency Protocol", "Risk Assessment", "Physical Security"],
+    salaryRange: "₹3,80,000 - ₹7,20,000 / yr",
+    minSalaryLpa: 3.8,
+    expReq: "1-3 Yrs",
+    desc: "Manage access control systems, monitor CCTV command centers, lead emergency drills, and audit campus physical security standards."
+  },
+  {
+    title: "Cloud Security & Zero-Trust Infrastructure Engineer",
+    category: "Security",
+    type: "full-time",
+    level: "senior",
+    skills: ["AWS Security", "Azure Sentinel", "IAM", "Zero Trust", "DevSecOps"],
+    salaryRange: "₹12,00,000 - ₹24,00,000 / yr",
+    minSalaryLpa: 12.0,
+    expReq: "4-8 Yrs",
+    desc: "Architect zero-trust security perimeter, enforce IAM least privilege, automate cloud security scans, and secure container runtimes."
+  },
+
+  // ===================== AIR FORCE & DEFENSE ROLES =====================
+  {
+    title: "Indian Air Force (IAF) - Commissioned Officer (Flying & Ground Duty Technical)",
+    category: "Air Force",
+    type: "full-time",
+    level: "mid-level",
+    skills: ["Aeronautical Engineering", "AFCAT Qualified", "Aviation Navigation", "Tactical Operations", "Flight Protocol"],
+    salaryRange: "₹8,50,000 - ₹19,50,000 / yr + Defense Perks",
+    minSalaryLpa: 8.5,
+    expReq: "0-4 Yrs",
+    desc: "Lead cutting-edge military aviation wings, oversee radar networks, airbase security, and precision aerospace engineering systems for national defense."
+  },
+  {
+    title: "Air Force Security Specialist (Garud Base Defense & Airfield Security)",
+    category: "Air Force",
+    type: "full-time",
+    level: "mid-level",
+    skills: ["Airbase Security", "Perimeter Defense", "Tactical Counter-Terror", "Emergency Airfield Protocol", "Weapons Systems"],
+    salaryRange: "₹6,50,000 - ₹15,00,000 / yr + Defense Allowances",
+    minSalaryLpa: 6.5,
+    expReq: "1-5 Yrs",
+    desc: "Guard frontline military airbases, execute airfield counter-sabotage operations, manage perimeter defense, and lead tactical quick reaction teams."
+  },
+  {
+    title: "Aviation Avionics & Radar Maintenance Engineer (Air Force Defense Systems)",
+    category: "Air Force",
+    type: "full-time",
+    level: "mid-level",
+    skills: ["Avionics Systems", "Defense Radars", "Aircraft Electricals", "Diagnostic Flight Test", "Electronic Warfare Systems"],
+    salaryRange: "₹7,50,000 - ₹17,00,000 / yr",
+    minSalaryLpa: 7.5,
+    expReq: "2-6 Yrs",
+    desc: "Maintain military radar telemetry, aircraft flight control computers, communication sets, and electronic countermeasures."
+  },
+  {
+    title: "Air Force Technical Airman & Propulsion Support Engineer",
+    category: "Air Force",
+    type: "full-time",
+    level: "entry-level",
+    skills: ["Jet Engine Propulsion", "Airframe Maintenance", "Ground Support Equipment", "Quality Inspection", "Flight Line Safety"],
+    salaryRange: "₹5,50,000 - ₹12,00,000 / yr + Military Perks",
+    minSalaryLpa: 5.5,
+    expReq: "0-3 Yrs",
+    desc: "Inspect jet engine turbine systems, test aircraft hydraulic pressures, support turnaround on flight lines, and ensure zero-failure airworthiness."
   }
 ];
 
@@ -394,7 +549,7 @@ const buildDirectLinks = (roleTitle, companyName, city, source, index) => {
  * Ingests up to 1,000+ active verified jobs across Bangalore, Hyderabad, Pune, and Mumbai
  * sourced from LinkedIn, Naukri, and Unstop across IT & Non-IT roles starting from ₹3 LPA.
  */
-const syncDailyJobs = async (targetCount = 1000) => {
+const syncDailyJobs = async (targetCount = 5000) => {
   try {
     console.log(`=== [DAILY CRAWLER] Starting Ingestion of up to ${targetCount} jobs from LinkedIn, Naukri & Unstop ===`);
     const salt = await bcrypt.genSalt(10);
@@ -493,11 +648,14 @@ const syncDailyJobs = async (targetCount = 1000) => {
     const unstopCount = await Job.countDocuments({ source: "Unstop" });
     const itCount = await Job.countDocuments({ category: "IT" });
     const nonItCount = await Job.countDocuments({ category: "Non-IT" });
+    const civilCount = await Job.countDocuments({ category: "Civil" });
+    const securityCount = await Job.countDocuments({ category: "Security" });
+    const airForceCount = await Job.countDocuments({ category: "Air Force" });
 
     console.log(`=== [DAILY CRAWLER] Successfully Ingested ${insertedTotal} Jobs! ===`);
     console.log(`=== Total in DB: ${totalInDb} (Bangalore: ${blrCount}, Hyderabad: ${hydCount}, Pune: ${puneCount}, Mumbai: ${mumbaiCount}) ===`);
     console.log(`=== Sources: LinkedIn (${linkedInCount}), Naukri (${naukriCount}), Unstop (${unstopCount}) ===`);
-    console.log(`=== Categories: IT (${itCount}), Non-IT (${nonItCount}) ===`);
+    console.log(`=== Categories: IT (${itCount}), Non-IT (${nonItCount}), Civil (${civilCount}), Security (${securityCount}), Air Force (${airForceCount}) ===`);
 
     return {
       success: true,
@@ -512,6 +670,9 @@ const syncDailyJobs = async (targetCount = 1000) => {
       unstopCount,
       itCount,
       nonItCount,
+      civilCount,
+      securityCount,
+      airForceCount,
       timestamp: new Date().toISOString(),
     };
   } catch (error) {
@@ -602,7 +763,7 @@ const initDailyScheduler = () => {
 
   // Run initial sync on startup
   clearOldCrawledJobs()
-    .then(() => syncDailyJobs(1000))
+    .then(() => syncDailyJobs(5000))
     .then(() => ensureAllJobsHaveWebsites())
     .catch(console.error);
 
@@ -614,14 +775,14 @@ const initDailyScheduler = () => {
       return;
     }
 
-    console.log("[SCHEDULED TIMER] 24-hour interval triggered. Refreshing 1,000 jobs from LinkedIn, Naukri & Unstop...");
+    console.log("[SCHEDULED TIMER] 24-hour interval triggered. Refreshing 5,000 jobs from LinkedIn, Naukri & Unstop...");
     clearOldCrawledJobs()
-      .then(() => syncDailyJobs(1000))
+      .then(() => syncDailyJobs(5000))
       .then(() => ensureAllJobsHaveWebsites())
       .catch(console.error);
   }, TWENTY_FOUR_HOURS);
 
-  console.log("[SCHEDULER] Automated 1,000 Daily Jobs Collector (LinkedIn, Naukri & Unstop) Active until Dec 12, 2027.");
+  console.log("[SCHEDULER] Automated 5,000 Daily Jobs Collector (LinkedIn, Naukri & Unstop) Active until Dec 12, 2027.");
 };
 
 module.exports = {

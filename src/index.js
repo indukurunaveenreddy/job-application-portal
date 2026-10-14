@@ -106,6 +106,30 @@ const App = () => {
               </Routes>
             </main>
 
+            {/* Site Footer */}
+            <footer className="site-footer">
+              <div className="footer-content">
+                <div className="footer-brand">
+                  <div className="brand-icon" style={{ width: "32px", height: "32px", fontSize: "0.9rem" }}>
+                    <i className="fa-solid fa-bolt"></i>
+                  </div>
+                  <div>
+                    <span className="brand-title" style={{ fontSize: "1.05rem" }}>NexHire</span>
+                    <span className="brand-badge" style={{ marginLeft: "8px" }}>v2.0</span>
+                  </div>
+                </div>
+
+                <div className="footer-credit">
+                  <span className="credit-pill">
+                    <i className="fa-solid fa-heart" style={{ color: "#f43f5e" }}></i> Designed by <strong>Naveenreddy</strong>
+                  </span>
+                  <span className="footer-rights">
+                    © {new Date().getFullYear()} NexHire • All Rights Reserved
+                  </span>
+                </div>
+              </div>
+            </footer>
+
             {/* Toast Notifications */}
             <div className="toast-container">
               {toasts.map((t) => (
@@ -146,7 +170,7 @@ const NavBar = () => {
         <div className="brand-icon">
           <i className="fa-solid fa-bolt"></i>
         </div>
-        <div>
+        <div style={{ display: "flex", alignItems: "center" }}>
           <span className="brand-title">NexHire</span>
           <span className="brand-badge" style={{ marginLeft: "8px" }}>v2.0</span>
         </div>
@@ -224,7 +248,7 @@ const Home = () => {
 
       // 1. Try Backend API first if reachable
       try {
-        const res = await fetch(`${API_BASE}/api/jobs?limit=1000`);
+        const res = await fetch(`${API_BASE}/api/jobs?limit=5000`);
         if (res.ok) {
           const contentType = res.headers.get("content-type") || "";
           if (contentType.includes("application/json")) {
@@ -276,18 +300,18 @@ const Home = () => {
         const res = await fetch(`${API_BASE}/api/jobs/sync-daily`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ count: 1000 }),
+          body: JSON.stringify({ count: 5000 }),
         });
         if (res.ok) {
           const data = await res.json();
-          addToast(data.message || "Fresh 1,000 jobs collected from LinkedIn, Naukri & Unstop!", "success");
+          addToast(data.message || "Fresh 5,000 jobs collected from LinkedIn, Naukri & Unstop!", "success");
           fetchJobs();
           return;
         }
       } catch (err) {
         console.warn("Backend sync endpoint offline, reloading jobs dataset:", err.message);
       }
-      addToast("Fresh 1,000 Daily Jobs refreshed with official company career portals!", "success");
+      addToast("Fresh 5,000 Daily Jobs refreshed with official company career portals!", "success");
       fetchJobs();
     } catch (err) {
       addToast("Sync error: " + err.message, "error");
@@ -321,12 +345,16 @@ const Home = () => {
   const unstopCount = jobs.filter((j) => j.source === "Unstop").length;
   const itCount = jobs.filter((j) => j.category === "IT" || !j.category).length;
   const nonItCount = jobs.filter((j) => j.category === "Non-IT").length;
+  const civilCount = jobs.filter((j) => j.category === "Civil").length;
+  const securityCount = jobs.filter((j) => j.category === "Security").length;
+  const airForceCount = jobs.filter((j) => j.category === "Air Force" || (j.category && j.category.toLowerCase().includes("air force"))).length;
 
   const filteredJobs = jobs.filter((j) => {
     const matchesSearch =
       j.title.toLowerCase().includes(search.toLowerCase()) ||
       (j.company && j.company.name && j.company.name.toLowerCase().includes(search.toLowerCase())) ||
       (j.skills && j.skills.some((s) => s.toLowerCase().includes(search.toLowerCase()))) ||
+      (j.category && j.category.toLowerCase().includes(search.toLowerCase())) ||
       j.location.toLowerCase().includes(search.toLowerCase());
 
     const matchesCity =
@@ -342,7 +370,10 @@ const Home = () => {
     const matchesCategory =
       categoryFilter === "all" ||
       (categoryFilter === "IT" && (j.category === "IT" || !j.category)) ||
-      (categoryFilter === "Non-IT" && j.category === "Non-IT");
+      (categoryFilter === "Non-IT" && j.category === "Non-IT") ||
+      (categoryFilter === "Civil" && j.category === "Civil") ||
+      (categoryFilter === "Security" && j.category === "Security") ||
+      (categoryFilter === "Air Force" && (j.category === "Air Force" || (j.category && j.category.toLowerCase().includes("air force"))));
 
     const matchesType = typeFilter === "all" || j.employmentType === typeFilter;
     const matchesLevel = levelFilter === "all" || j.experienceLevel === levelFilter;
@@ -406,13 +437,13 @@ const Home = () => {
       {/* Hero Header */}
       <section className="hero">
         <div className="hero-pill">
-          <i className="fa-solid fa-sparkles"></i> Automated Collector: 1,000+ Daily Openings in Bangalore, Hyderabad, Pune & Mumbai
+          <i className="fa-solid fa-sparkles"></i> Automated Collector: 5,000+ Daily Openings in Bangalore, Hyderabad, Pune & Mumbai
         </div>
         <h1>
-          Find Top Careers at Startups & Tech Giants in <span>Bangalore, Hyderabad, Pune & Mumbai</span>
+          Find Top Careers in IT, Non-IT, <span>Civil, Security & Air Force</span>
         </h1>
         <p>
-          Aggregating verified openings from <strong>LinkedIn</strong>, <strong>Naukri.com</strong>, and <strong>Unstop</strong> across <strong>IT & Non-IT</strong> starting from <strong>₹3 LPA</strong> with direct official employer hiring links.
+          Aggregating verified openings from <strong>LinkedIn</strong>, <strong>Naukri.com</strong>, and <strong>Unstop</strong> across <strong>IT, Non-IT, Civil Infrastructure, Cyber & Operations Security, and Air Force Defense</strong> starting from <strong>₹3 LPA</strong> with direct employer application links.
         </p>
 
         <div className="hero-stats">
@@ -445,6 +476,18 @@ const Home = () => {
             <span className="stat-label">💼 Non-IT</span>
           </div>
           <div className="stat-item">
+            <span className="stat-number">{civilCount}</span>
+            <span className="stat-label">🏗️ Civil</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">{securityCount}</span>
+            <span className="stat-label">🛡️ Security</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-number">{airForceCount}</span>
+            <span className="stat-label">✈️ Air Force</span>
+          </div>
+          <div className="stat-item">
             <span className="stat-number">{unstopCount}</span>
             <span className="stat-label">🚀 Unstop</span>
           </div>
@@ -469,9 +512,12 @@ const Home = () => {
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
         >
-          <option value="all">All Domains (IT & Non-IT)</option>
+          <option value="all">All Domains (IT, Non-IT, Civil, Security, Air Force)</option>
           <option value="IT">💻 IT & Tech Roles</option>
           <option value="Non-IT">💼 Non-IT (Operations, Sales, HR, Marketing)</option>
+          <option value="Civil">🏗️ Civil Engineering & Infrastructure</option>
+          <option value="Security">🛡️ Security & Cyber Defense</option>
+          <option value="Air Force">✈️ Indian Air Force & Defense</option>
         </select>
 
         <select
@@ -556,6 +602,30 @@ const Home = () => {
           >
             <i className="fa-solid fa-user-tie" style={{ color: "#f472b6" }}></i> 💼 Non-IT ({nonItCount})
           </button>
+          <button
+            type="button"
+            className={`location-pill civil ${categoryFilter === "Civil" ? "active" : ""}`}
+            onClick={() => setCategoryFilter(categoryFilter === "Civil" ? "all" : "Civil")}
+            style={{ borderColor: "#f59e0b" }}
+          >
+            <i className="fa-solid fa-trowel-bricks" style={{ color: "#fbbf24" }}></i> 🏗️ Civil ({civilCount})
+          </button>
+          <button
+            type="button"
+            className={`location-pill security ${categoryFilter === "Security" ? "active" : ""}`}
+            onClick={() => setCategoryFilter(categoryFilter === "Security" ? "all" : "Security")}
+            style={{ borderColor: "#10b981" }}
+          >
+            <i className="fa-solid fa-shield-halved" style={{ color: "#34d399" }}></i> 🛡️ Security ({securityCount})
+          </button>
+          <button
+            type="button"
+            className={`location-pill airforce ${categoryFilter === "Air Force" ? "active" : ""}`}
+            onClick={() => setCategoryFilter(categoryFilter === "Air Force" ? "all" : "Air Force")}
+            style={{ borderColor: "#0ea5e9" }}
+          >
+            <i className="fa-solid fa-plane-departure" style={{ color: "#38bdf8" }}></i> ✈️ Air Force ({airForceCount})
+          </button>
 
           {/* Source Tabs */}
           <button
@@ -619,9 +689,17 @@ const Home = () => {
                   <h3 className="job-title">{job.title}</h3>
                   <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
                     <span
-                      className={`badge-category ${job.category === "Non-IT" ? "non-it" : "it"}`}
+                      className={`badge-category ${
+                        job.category === "Civil" ? "civil" :
+                        job.category === "Security" ? "security" :
+                        (job.category === "Air Force" || (job.category && job.category.toLowerCase().includes("air force"))) ? "airforce" :
+                        job.category === "Non-IT" ? "non-it" : "it"
+                      }`}
                     >
-                      {job.category === "Non-IT" ? "💼 Non-IT" : "💻 IT"}
+                      {job.category === "Civil" ? "🏗️ Civil" :
+                       job.category === "Security" ? "🛡️ Security" :
+                       (job.category === "Air Force" || (job.category && job.category.toLowerCase().includes("air force"))) ? "✈️ Air Force" :
+                       job.category === "Non-IT" ? "💼 Non-IT" : "💻 IT"}
                     </span>
                     <span
                       className={`badge-source ${job.source === "LinkedIn" ? "linkedin" : job.source === "Unstop" ? "unstop" : "naukri"}`}
